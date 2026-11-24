@@ -39,7 +39,9 @@ export default function LeafletMap({
   onEdgeClick,
   liveTrackVehicleId,
   selectedVehicleId,
-  onVehicleClick
+  onVehicleClick,
+  userRole = 'student',
+  activeRide = null
 }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -183,15 +185,18 @@ export default function LeafletMap({
       }
     });
 
+    const isStudent = userRole === 'student';
+
     for (const edge of edges) {
       const p1 = nodeCoords.get(edge.from);
       const p2 = nodeCoords.get(edge.to);
       if (!p1 || !p2) continue;
 
       const isClosed = edge.closed;
-      const coreColor = isClosed ? '#ef4444' : '#38bdf8';
-      const casingColor = isClosed ? '#7f1d1d' : '#0f172a';
-      const weight = isClosed ? 5 : 4;
+      // In student view: keep background network subtle so satellite & campus buildings shine through
+      const coreColor = isClosed ? '#ef4444' : (isStudent ? 'rgba(56, 189, 248, 0.22)' : '#38bdf8');
+      const casingColor = isClosed ? '#7f1d1d' : (isStudent ? 'transparent' : '#0f172a');
+      const weight = isClosed ? 5 : (isStudent ? 2 : 4);
       const dashArray = isClosed ? '6, 6' : null;
 
       // Casing polyline (outer shadow)
@@ -200,11 +205,11 @@ export default function LeafletMap({
         casing = L.polyline([p1, p2], {
           color: casingColor,
           weight: weight + 4,
-          opacity: 0.8
+          opacity: isStudent ? 0.2 : 0.8
         }).addTo(map);
         edgeCasingsRef.current.set(edge.id, casing);
       } else {
-        casing.setStyle({ color: casingColor, weight: weight + 4 });
+        casing.setStyle({ color: casingColor, weight: weight + 4, opacity: isStudent ? 0.2 : 0.8 });
       }
 
       // Core polyline
@@ -214,7 +219,7 @@ export default function LeafletMap({
           color: coreColor,
           weight,
           dashArray,
-          opacity: isClosed ? 0.95 : 0.75
+          opacity: isClosed ? 0.95 : (isStudent ? 0.35 : 0.75)
         }).addTo(map);
 
         poly.on('click', () => {
@@ -223,7 +228,7 @@ export default function LeafletMap({
 
         edgePolylinesRef.current.set(edge.id, poly);
       } else {
-        poly.setStyle({ color: coreColor, weight, dashArray, opacity: isClosed ? 0.95 : 0.75 });
+        poly.setStyle({ color: coreColor, weight, dashArray, opacity: isClosed ? 0.95 : (isStudent ? 0.35 : 0.75) });
       }
 
       poly.bindTooltip(
@@ -335,66 +340,153 @@ export default function LeafletMap({
     stopMarkersRef.current.forEach(m => m.remove());
     stopMarkersRef.current = [];
 
-    for (const vehicle of vehicles) {
-      if (vehicle.status === 'broken' || vehicle.stops.length === 0) continue;
+    if (userRole === 'student') {
+      // REQUIREMENT: Show route ONLY when ride gets booked, and route ONLY for that placed ride
+      if (activeRide && activeRide.vehicleId) {
+        const assignedVeh = vehicles.find(v => v.id === activeRide.vehicleId);
+        if (assignedVeh && assignedVeh.status !== 'broken') {
+          const pickupPos = nodeCoords.get(activeRide.pickup);
+          const dropoffPos = nodeCoords.get(activeRide.dropoff);
+          const vehPos = assignedVeh.position ? [assignedVeh.position.lat, assignedVeh.position.lng] : null;
 
-      const pathCoords = [[vehicle.position.lat, vehicle.position.lng]];
-      if (vehicle.route && vehicle.route.length > 0) {
-        for (const nodeId of vehicle.route) {
-          const latLng = nodeCoords.get(nodeId);
-          if (latLng) pathCoords.push(latLng);
+          const ridePathCoords = [];
+          if (vehPos) ridePathCoords.push(vehPos);
+
+          if (assignedVeh.route && assignedVeh.route.length > 0) {
+            for (const nodeId of assignedVeh.route) {
+              const latLng = nodeCoords.get(nodeId);
+              if (latLng) ridePathCoords.push(latLng);
+            }
+          } else {
+            if (pickupPos && activeRide.status !== 'onboard') ridePathCoords.push(pickupPos);
+            if (dropoffPos) ridePathCoords.push(dropoffPos);
+          }
+
+          if (ridePathCoords.length > 1) {
+            // High-visibility glowing orange polyline ONLY for this placed ride
+            const glowPoly = L.polyline(ridePathCoords, {
+              color: '#f97316',
+              weight: 9,
+              opacity: 0.4
+            }).addTo(map);
+
+            const corePoly = L.polyline(ridePathCoords, {
+              color: '#f97316',
+              weight: 4.5,
+              opacity: 1.0,
+              dashArray: '8, 8'
+            }).addTo(map);
+
+            routePolylinesRef.current.set(`placed-ride-glow`, glowPoly);
+            routePolylinesRef.current.set(`placed-ride-core`, corePoly);
+          }
+
+          // Dedicated Pickup Marker for this placed ride
+          if (pickupPos) {
+            const pickupIcon = L.divIcon({
+              className: 'custom-placed-pickup-pin',
+              html: `
+                <div style="background:#10b981; color:#ffffff; border:2px solid #ffffff; border-radius:9999px; padding:3px 9px; font-size:11px; font-weight:800; display:flex; align-items:center; gap:4px; box-shadow:0 0 16px rgba(16,185,129,0.9); white-space:nowrap;">
+                  <span>🟢 YOUR PICKUP</span>
+                </div>
+              `,
+              iconSize: [115, 26],
+              iconAnchor: [57, 13]
+            });
+            const pMarker = L.marker(pickupPos, { icon: pickupIcon, zIndexOffset: 1200 }).addTo(map);
+            pMarker.bindTooltip(`<b>Your Pickup:</b> ${activeRide.pickup}`, { permanent: true, direction: 'top' });
+            stopMarkersRef.current.push(pMarker);
+          }
+
+          // Dedicated Dropoff Marker for this placed ride
+          if (dropoffPos) {
+            const dropoffIcon = L.divIcon({
+              className: 'custom-placed-dropoff-pin',
+              html: `
+                <div style="background:#f97316; color:#ffffff; border:2px solid #ffffff; border-radius:9999px; padding:3px 9px; font-size:11px; font-weight:800; display:flex; align-items:center; gap:4px; box-shadow:0 0 16px rgba(249,115,22,0.9); white-space:nowrap;">
+                  <span>🏁 YOUR DROPOFF</span>
+                </div>
+              `,
+              iconSize: [125, 26],
+              iconAnchor: [62, 13]
+            });
+            const dMarker = L.marker(dropoffPos, { icon: dropoffIcon, zIndexOffset: 1200 }).addTo(map);
+            dMarker.bindTooltip(`<b>Your Dropoff:</b> ${activeRide.dropoff}`, { permanent: true, direction: 'bottom' });
+            stopMarkersRef.current.push(dMarker);
+          }
+
+          // Automatically focus map on user's active ride
+          if (pickupPos && dropoffPos) {
+            const tripBounds = L.latLngBounds([pickupPos, dropoffPos, ...(vehPos ? [vehPos] : [])]);
+            map.fitBounds(tripBounds, { padding: [55, 55], maxZoom: 18, animate: true });
+          }
         }
       }
+      // When NO ride is booked, routes remain completely clean and empty!
+    } else {
+      // Admin / Fleet dispatch view: draw all vehicle routes and stop badges
+      for (const vehicle of vehicles) {
+        if (vehicle.status === 'broken' || vehicle.stops.length === 0) continue;
 
-      if (pathCoords.length > 1) {
-        // Glowing polyline
-        const glowPoly = L.polyline(pathCoords, {
-          color: vehicle.color || '#f97316',
-          weight: 8,
-          opacity: 0.25
-        }).addTo(map);
+        const pathCoords = [[vehicle.position.lat, vehicle.position.lng]];
+        if (vehicle.route && vehicle.route.length > 0) {
+          for (const nodeId of vehicle.route) {
+            const latLng = nodeCoords.get(nodeId);
+            if (latLng) pathCoords.push(latLng);
+          }
+        }
 
-        const corePoly = L.polyline(pathCoords, {
-          color: vehicle.color || '#f97316',
-          weight: 3.5,
-          dashArray: '6, 8',
-          opacity: 0.95
-        }).addTo(map);
+        if (pathCoords.length > 1) {
+          const glowPoly = L.polyline(pathCoords, {
+            color: vehicle.color || '#f97316',
+            weight: 8,
+            opacity: 0.25
+          }).addTo(map);
 
-        routePolylinesRef.current.set(`${vehicle.id}-glow`, glowPoly);
-        routePolylinesRef.current.set(`${vehicle.id}-core`, corePoly);
-      }
+          const corePoly = L.polyline(pathCoords, {
+            color: vehicle.color || '#f97316',
+            weight: 3.5,
+            dashArray: '6, 8',
+            opacity: 0.95
+          }).addTo(map);
 
-      // Numbered stops along planned route
-      vehicle.stops.forEach((stop, index) => {
-        const nodePos = nodeCoords.get(stop.node);
-        if (!nodePos) return;
+          routePolylinesRef.current.set(`${vehicle.id}-glow`, glowPoly);
+          routePolylinesRef.current.set(`${vehicle.id}-core`, corePoly);
+        }
 
-        const isPickup = stop.type === 'pickup';
-        const stopHtml = `
-          <div class="stop-badge ${isPickup ? 'pickup' : 'dropoff'}" style="border: 2px solid ${vehicle.color || '#f97316'};" title="${isPickup ? 'Pickup' : 'Dropoff'} #${index + 1}">
-            ${isPickup ? 'P' : 'D'}${index + 1}
-          </div>
-        `;
+        vehicle.stops.forEach((stop, index) => {
+          const nodePos = nodeCoords.get(stop.node);
+          if (!nodePos) return;
 
-        const stopIcon = L.divIcon({
-          className: 'custom-stop-icon',
-          html: stopHtml,
-          iconSize: [26, 26],
-          iconAnchor: [13, 13]
+          const isPickup = stop.type === 'pickup';
+          const stopHtml = `
+            <div class="stop-badge ${isPickup ? 'pickup' : 'dropoff'}" style="border: 2px solid ${vehicle.color || '#f97316'};" title="${isPickup ? 'Pickup' : 'Dropoff'} #${index + 1}">
+              ${isPickup ? 'P' : 'D'}${index + 1}
+            </div>
+          `;
+
+          const stopIcon = L.divIcon({
+            className: 'custom-stop-icon',
+            html: stopHtml,
+            iconSize: [26, 26],
+            iconAnchor: [13, 13]
+          });
+
+          const stopMarker = L.marker(nodePos, { icon: stopIcon, zIndexOffset: 700 }).addTo(map);
+          stopMarker.bindTooltip(`<b>Stop #${index + 1}: ${isPickup ? 'PICKUP' : 'DROPOFF'}</b><br>Rider: ${stop.requestId}<br>ETA: t=${stop.plannedArrival}m`);
+          stopMarkersRef.current.push(stopMarker);
         });
-
-        const stopMarker = L.marker(nodePos, { icon: stopIcon, zIndexOffset: 700 }).addTo(map);
-        stopMarker.bindTooltip(`<b>Stop #${index + 1}: ${isPickup ? 'PICKUP' : 'DROPOFF'}</b><br>Rider: ${stop.requestId}<br>ETA: t=${stop.plannedArrival}m`);
-        stopMarkersRef.current.push(stopMarker);
-      });
+      }
     }
 
     // 5. Waiting Requests Pins
     waitingMarkersRef.current.forEach(m => m.remove());
     waitingMarkersRef.current = [];
 
-    const waitingRequests = requests.filter(r => r.status === 'waiting');
+    const waitingRequests = (userRole === 'student')
+      ? (activeRide && activeRide.status === 'waiting' ? [activeRide] : [])
+      : requests.filter(r => r.status === 'waiting');
+
     for (const req of waitingRequests) {
       const pos = nodeCoords.get(req.pickup);
       if (!pos) continue;
@@ -410,7 +502,7 @@ export default function LeafletMap({
       m.bindTooltip(`<b>Waiting Rider:</b> ${req.riderName || req.id}<br>From: ${req.pickup}<br>To: ${req.dropoff}`);
       waitingMarkersRef.current.push(m);
     }
-  }, [state, onNodeClick, onEdgeClick, liveTrackVehicleId, selectedVehicleId, onVehicleClick]);
+  }, [state, onNodeClick, onEdgeClick, liveTrackVehicleId, selectedVehicleId, onVehicleClick, userRole, activeRide]);
 
   return (
     <div className="relative w-full h-full min-h-[520px] rounded-2xl overflow-hidden shadow-2xl border border-slate-800" style={{ minHeight: '520px' }}>

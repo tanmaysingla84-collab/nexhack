@@ -41,6 +41,7 @@ export default function CampusPoolPage() {
   const [showProblemSolution, setShowProblemSolution] = useState(false);
   const [inspectedVehicle, setInspectedVehicle] = useState(null);
   const [trackedVehicleId, setTrackedVehicleId] = useState(null);
+  const [studentActiveRideId, setStudentActiveRideId] = useState(null);
 
   // Scripted Demo State
   const [demoActive, setDemoActive] = useState(false);
@@ -285,7 +286,11 @@ export default function CampusPoolPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(req)
       });
-      return await res.json();
+      const data = await res.json();
+      if (data?.requestId) {
+        setStudentActiveRideId(data.requestId);
+      }
+      return data;
     } catch (e) {
       console.error('Add request error:', e);
     }
@@ -296,6 +301,9 @@ export default function CampusPoolPage() {
       const res = await fetch(`/api/requests/${requestId}/cancel`, {
         method: 'POST'
       });
+      if (requestId === studentActiveRideId) {
+        setStudentActiveRideId(null);
+      }
       return await res.json();
     } catch (e) {
       console.error('Cancel request error:', e);
@@ -350,7 +358,7 @@ export default function CampusPoolPage() {
   // If user is not logged in or during initial mount, present dedicated Portal Login Hub
   if (mounted && !currentUser) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="min-h-screen w-full bg-slate-950 text-slate-100 overflow-y-auto">
         <LoginPage
           onLogin={handleLogin}
           onOpenProblemSolution={() => setShowProblemSolution(true)}
@@ -365,16 +373,19 @@ export default function CampusPoolPage() {
           seed={42}
           campus={campusData}
         />
-
-        <ProblemSolutionModal
-          isOpen={showProblemSolution}
-          onClose={() => setShowProblemSolution(false)}
-        />
       </div>
     );
   }
 
   const role = currentUser?.role || 'student';
+
+  // Compute active ride for the student
+  const activeStudentRide = (simState?.requests || []).find(r =>
+    (r.id === studentActiveRideId ||
+     (currentUser?.user?.name && r.riderName?.toLowerCase().includes(currentUser.user.name.toLowerCase())) ||
+     (currentUser?.user?.id && r.studentId === currentUser.user.id)) &&
+    ['waiting', 'assigned', 'onboard'].includes(r.status)
+  ) || (studentActiveRideId ? (simState?.requests || []).find(r => r.id === studentActiveRideId && ['waiting', 'assigned', 'onboard'].includes(r.status)) : null);
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100">
@@ -417,6 +428,8 @@ export default function CampusPoolPage() {
             <div className="w-full h-full min-h-[520px]">
               <LeafletMap
                 state={simState}
+                userRole={role}
+                activeRide={activeStudentRide}
                 onNodeClick={(node) => {
                   if (soundEnabled) playSound('click');
                   handleAddRequest({
@@ -428,7 +441,7 @@ export default function CampusPoolPage() {
                     riderName: currentUser?.user?.name || 'Aarav Sharma'
                   });
                 }}
-                liveTrackVehicleId={trackedVehicleId}
+                liveTrackVehicleId={activeStudentRide?.vehicleId || trackedVehicleId}
                 onVehicleClick={(v) => {
                   if (soundEnabled) playSound('click');
                   setInspectedVehicle(v);
@@ -446,6 +459,8 @@ export default function CampusPoolPage() {
                 onCancelRequest={handleCancelRequest}
                 soundEnabled={soundEnabled}
                 currentUser={currentUser?.user}
+                activeRideId={studentActiveRideId}
+                onRidePlaced={setStudentActiveRideId}
               />
             </div>
           </div>
@@ -527,11 +542,6 @@ export default function CampusPoolPage() {
         onClose={() => setShowComparison(false)}
         seed={42}
         campus={campusData}
-      />
-
-      <ProblemSolutionModal
-        isOpen={showProblemSolution}
-        onClose={() => setShowProblemSolution(false)}
       />
 
       {inspectedVehicle && (

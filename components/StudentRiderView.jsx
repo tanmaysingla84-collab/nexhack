@@ -24,13 +24,21 @@ export default function StudentRiderView({
   onAddRequest,
   onCancelRequest,
   soundEnabled,
-  currentUser = { name: 'Aarav Sharma', id: 'GU24-CSE-1042', credits: 160 }
+  currentUser = { name: 'Aarav Sharma', id: 'GU24-CSE-1042', credits: 160 },
+  activeRideId: externalActiveRideId,
+  onRidePlaced
 }) {
-  const [pickup, setPickup] = useState('boys_hostel');
-  const [dropoff, setDropoff] = useState('academic_complex');
+  const [pickup, setPickup] = useState('girls_hostel');
+  const [dropoff, setDropoff] = useState('student_center');
   const [rideType, setRideType] = useState('pool'); // 'pool' | 'solo'
   const [passengers, setPassengers] = useState(1);
-  const [activeRideId, setActiveRideId] = useState(null);
+  const [activeRideId, setActiveRideId] = useState(externalActiveRideId || null);
+
+  useEffect(() => {
+    if (externalActiveRideId) {
+      setActiveRideId(externalActiveRideId);
+    }
+  }, [externalActiveRideId]);
 
   // Sync station selections with loaded nodes
   useEffect(() => {
@@ -39,20 +47,21 @@ export default function StudentRiderView({
         setPickup(nodes.find(n => n.id.includes('hostel'))?.id || nodes[0].id);
       }
       if (!nodes.some(n => n.id === dropoff)) {
-        setDropoff(nodes.find(n => n.id.includes('academic') || n.id.includes('gateway'))?.id || nodes[1]?.id || nodes[0].id);
+        setDropoff(nodes.find(n => n.id.includes('student') || n.id.includes('academic') || n.id.includes('gateway'))?.id || nodes[1]?.id || nodes[0].id);
       }
     }
   }, [nodes]);
 
   // Find user's active ride
+  const currentRideId = externalActiveRideId || activeRideId;
   const activeRide = requests.find(r =>
-    (r.id === activeRideId || 
+    (r.id === currentRideId || 
      (currentUser?.name && r.riderName?.toLowerCase().includes(currentUser.name.toLowerCase())) || 
      (currentUser?.id && r.studentId === currentUser.id)) &&
     ['waiting', 'assigned', 'onboard'].includes(r.status)
-  ) || (activeRideId ? requests.find(r => r.id === activeRideId) : null);
+  ) || (currentRideId ? requests.find(r => r.id === currentRideId && ['waiting', 'assigned', 'onboard'].includes(r.status)) : null);
 
-  const handleBook = (e) => {
+  const handleBook = async (e) => {
     e.preventDefault();
     if (pickup === dropoff) {
       alert('Pickup and dropoff destination cannot be the same station!');
@@ -71,18 +80,19 @@ export default function StudentRiderView({
       });
     } catch (err) {}
 
-    const result = onAddRequest({
+    const result = await onAddRequest({
       pickup,
       dropoff,
       passengers: parseInt(passengers, 10),
       windowMin: 10,
       maxDetourFactor: rideType === 'pool' ? 1.5 : 1.0,
-      riderName: currentUser.name,
-      studentId: currentUser.id
+      riderName: currentUser?.name || 'Aarav Sharma',
+      studentId: currentUser?.id || 'GU24-CSE-1042'
     });
 
     if (result?.requestId) {
       setActiveRideId(result.requestId);
+      if (onRidePlaced) onRidePlaced(result.requestId);
     }
   };
 

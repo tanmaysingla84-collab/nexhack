@@ -371,15 +371,6 @@ export default function App() {
           <button
             className="btn-secondary btn-sm"
             style={{ fontWeight: 700 }}
-            title="View NexHack Problem Statement & Solution Guide"
-            onClick={() => setShowProblemSolution(true)}
-          >
-            📘 Problem Solution
-          </button>
-
-          <button
-            className="btn-secondary btn-sm"
-            style={{ fontWeight: 700 }}
             title="Compare Dynamic Pooling vs Solo Direct Rides"
             onClick={() => setShowComparison(true)}
           >

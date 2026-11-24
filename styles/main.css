@@ -47,10 +47,11 @@ body {
   font-family: var(--font-family);
   background-color: var(--gu-bg);
   color: var(--gu-text-main);
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   -webkit-font-smoothing: antialiased;
 }
 

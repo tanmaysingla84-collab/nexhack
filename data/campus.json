@@ -1,27 +1,905 @@
 {
+  "meta": {
+    "name": "Geeta University Master Plan Layout",
+    "version": "2.0.0",
+    "image": "/images/campus-master-plan.jpg",
+    "imageWidth": 768,
+    "imageHeight": 1024,
+    "crs": "L.CRS.Simple",
+    "calibratedScaleMetersPerPx": 1.1,
+    "defaultSpeedKmh": 18
+  },
+  "scale": {
+    "metersPerPixel": 1.1,
+    "campusWidthMeters": 844.8,
+    "campusHeightMeters": 1126.4
+  },
   "nodes": [
-    { "id": "main_entrance", "name": "Main Entrance & Grand Rotary", "type": "gate", "lat": 29.3038, "lng": 76.8954 },
-    { "id": "gateway_building", "name": "Gateway Building (Library & Admin)", "type": "admin", "lat": 29.3043, "lng": 76.8942 },
-    { "id": "student_center", "name": "Student Center & Cafeteria", "type": "dining", "lat": 29.3048, "lng": 76.8932 },
-    { "id": "sports_complex", "name": "Cricket Stadium & Sports Complex", "type": "sports", "lat": 29.3056, "lng": 76.8922 },
-    { "id": "academic_complex", "name": "Main Academic Complex", "type": "academic", "lat": 29.3052, "lng": 76.8942 },
-    { "id": "girls_hostel", "name": "Girls Hostel & Dining Mess", "type": "hostel", "lat": 29.3060, "lng": 76.8943 },
-    { "id": "boys_hostel", "name": "Boys Hostel Complex", "type": "hostel", "lat": 29.3059, "lng": 76.8953 },
-    { "id": "staff_housing", "name": "Staff Housing & Faculty Residences", "type": "hostel", "lat": 29.3048, "lng": 76.8956 },
-    { "id": "north_entrance", "name": "North Campus Entrance & Admin Block", "type": "gate", "lat": 29.3066, "lng": 76.8938 }
+    {
+      "id": "N01",
+      "name": "North Entrance Gate",
+      "type": "gate",
+      "x": 312,
+      "y": 162,
+      "lat": 29.3068,
+      "lng": 76.8942
+    },
+    {
+      "id": "N02",
+      "name": "North Parking & Security Post",
+      "type": "parking",
+      "x": 355,
+      "y": 185,
+      "lat": 29.3066,
+      "lng": 76.8946
+    },
+    {
+      "id": "N03",
+      "name": "North Academic Block (Block A)",
+      "type": "building",
+      "x": 305,
+      "y": 245,
+      "lat": 29.3063,
+      "lng": 76.894
+    },
+    {
+      "id": "N04",
+      "name": "Central Administrative Block",
+      "type": "admin",
+      "x": 365,
+      "y": 235,
+      "lat": 29.3063,
+      "lng": 76.8948
+    },
+    {
+      "id": "N05",
+      "name": "Academic Plaza North Junction",
+      "type": "junction",
+      "x": 332,
+      "y": 285,
+      "lat": 29.3059,
+      "lng": 76.8944
+    },
+    {
+      "id": "N06",
+      "name": "West Academic Wing (Block B)",
+      "type": "building",
+      "x": 288,
+      "y": 335,
+      "lat": 29.3056,
+      "lng": 76.8938
+    },
+    {
+      "id": "N07",
+      "name": "Girls Hostel Block & Dining Mess",
+      "type": "hostel",
+      "x": 358,
+      "y": 385,
+      "lat": 29.3053,
+      "lng": 76.8947
+    },
+    {
+      "id": "N08",
+      "name": "Academic Plaza Central Crossing",
+      "type": "junction",
+      "x": 332,
+      "y": 422,
+      "lat": 29.305,
+      "lng": 76.8944
+    },
+    {
+      "id": "N09",
+      "name": "Sports Complex & Cricket Pavilion",
+      "type": "sports",
+      "x": 178,
+      "y": 432,
+      "lat": 29.3049,
+      "lng": 76.8922
+    },
+    {
+      "id": "N10",
+      "name": "Service Road West Bypass",
+      "type": "junction",
+      "x": 275,
+      "y": 428,
+      "lat": 29.305,
+      "lng": 76.8936
+    },
+    {
+      "id": "N11",
+      "name": "Boys Hostel Strip (Tagore & Raman)",
+      "type": "hostel",
+      "x": 495,
+      "y": 388,
+      "lat": 29.3052,
+      "lng": 76.8966
+    },
+    {
+      "id": "N12",
+      "name": "East Hostel & Playground Hub",
+      "type": "hostel",
+      "x": 505,
+      "y": 260,
+      "lat": 29.3061,
+      "lng": 76.8968
+    },
+    {
+      "id": "N13",
+      "name": "Staff & Faculty Housing",
+      "type": "building",
+      "x": 578,
+      "y": 460,
+      "lat": 29.3047,
+      "lng": 76.8978
+    },
+    {
+      "id": "N14",
+      "name": "Central Academic Megablock",
+      "type": "building",
+      "x": 380,
+      "y": 475,
+      "lat": 29.3046,
+      "lng": 76.895
+    },
+    {
+      "id": "N15",
+      "name": "Academic Plaza South Junction",
+      "type": "junction",
+      "x": 332,
+      "y": 515,
+      "lat": 29.3043,
+      "lng": 76.8944
+    },
+    {
+      "id": "N16",
+      "name": "Student Center & Cafeteria",
+      "type": "building",
+      "x": 305,
+      "y": 572,
+      "lat": 29.3039,
+      "lng": 76.894
+    },
+    {
+      "id": "N17",
+      "name": "Gateway Landmark Building (Library)",
+      "type": "landmark",
+      "x": 365,
+      "y": 595,
+      "lat": 29.3037,
+      "lng": 76.8948
+    },
+    {
+      "id": "N18",
+      "name": "South Academic Complex",
+      "type": "building",
+      "x": 465,
+      "y": 565,
+      "lat": 29.3039,
+      "lng": 76.8962
+    },
+    {
+      "id": "N19",
+      "name": "South Parking & Field Loop",
+      "type": "parking",
+      "x": 395,
+      "y": 665,
+      "lat": 29.3032,
+      "lng": 76.8952
+    },
+    {
+      "id": "N20",
+      "name": "University Plaza Boulevard Junction",
+      "type": "junction",
+      "x": 435,
+      "y": 630,
+      "lat": 29.3035,
+      "lng": 76.8958
+    },
+    {
+      "id": "N21",
+      "name": "Grand Rotary & Water Channel Circle",
+      "type": "junction",
+      "x": 550,
+      "y": 780,
+      "lat": 29.3024,
+      "lng": 76.8974
+    },
+    {
+      "id": "N22",
+      "name": "South-East Main Entrance Gate",
+      "type": "gate",
+      "x": 605,
+      "y": 805,
+      "lat": 29.3022,
+      "lng": 76.8982
+    }
   ],
   "edges": [
-    { "id": "e1", "from": "main_entrance", "to": "gateway_building", "minutes": 2, "closed": false },
-    { "id": "e2", "from": "gateway_building", "to": "student_center", "minutes": 1, "closed": false },
-    { "id": "e3", "from": "student_center", "to": "sports_complex", "minutes": 2, "closed": false },
-    { "id": "e4", "from": "sports_complex", "to": "academic_complex", "minutes": 2, "closed": false },
-    { "id": "e5", "from": "gateway_building", "to": "academic_complex", "minutes": 1, "closed": false },
-    { "id": "e6", "from": "academic_complex", "to": "girls_hostel", "minutes": 1, "closed": false },
-    { "id": "e7", "from": "girls_hostel", "to": "boys_hostel", "minutes": 2, "closed": false },
-    { "id": "e8", "from": "academic_complex", "to": "staff_housing", "minutes": 2, "closed": false },
-    { "id": "e9", "from": "main_entrance", "to": "staff_housing", "minutes": 2, "closed": false },
-    { "id": "e10", "from": "girls_hostel", "to": "north_entrance", "minutes": 1, "closed": false },
-    { "id": "e11", "from": "sports_complex", "to": "north_entrance", "minutes": 2, "closed": false },
-    { "id": "e12", "from": "boys_hostel", "to": "north_entrance", "minutes": 2, "closed": false }
+    {
+      "id": "E01",
+      "from": "N01",
+      "to": "N02",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 48.8,
+      "lengthMeters": 53.7,
+      "minutes": 0.21,
+      "waypoints": [
+        [
+          312,
+          162
+        ],
+        [
+          355,
+          185
+        ]
+      ]
+    },
+    {
+      "id": "E02",
+      "from": "N02",
+      "to": "N03",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 78.1,
+      "lengthMeters": 85.9,
+      "minutes": 0.34,
+      "waypoints": [
+        [
+          355,
+          185
+        ],
+        [
+          305,
+          245
+        ]
+      ]
+    },
+    {
+      "id": "E03",
+      "from": "N02",
+      "to": "N04",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 51,
+      "lengthMeters": 56.1,
+      "minutes": 0.22,
+      "waypoints": [
+        [
+          355,
+          185
+        ],
+        [
+          365,
+          235
+        ]
+      ]
+    },
+    {
+      "id": "E04",
+      "from": "N03",
+      "to": "N05",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 48.3,
+      "lengthMeters": 53.1,
+      "minutes": 0.18,
+      "waypoints": [
+        [
+          305,
+          245
+        ],
+        [
+          332,
+          285
+        ]
+      ]
+    },
+    {
+      "id": "E05",
+      "from": "N04",
+      "to": "N05",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 59.9,
+      "lengthMeters": 65.9,
+      "minutes": 0.22,
+      "waypoints": [
+        [
+          365,
+          235
+        ],
+        [
+          332,
+          285
+        ]
+      ]
+    },
+    {
+      "id": "E06",
+      "from": "N05",
+      "to": "N06",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 66.6,
+      "lengthMeters": 73.3,
+      "minutes": 0.24,
+      "waypoints": [
+        [
+          332,
+          285
+        ],
+        [
+          288,
+          335
+        ]
+      ]
+    },
+    {
+      "id": "E07",
+      "from": "N05",
+      "to": "N07",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 103.3,
+      "lengthMeters": 113.6,
+      "minutes": 0.45,
+      "waypoints": [
+        [
+          332,
+          285
+        ],
+        [
+          358,
+          385
+        ]
+      ]
+    },
+    {
+      "id": "E08",
+      "from": "N05",
+      "to": "N12",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 174.8,
+      "lengthMeters": 192.3,
+      "minutes": 0.77,
+      "waypoints": [
+        [
+          332,
+          285
+        ],
+        [
+          505,
+          260
+        ]
+      ]
+    },
+    {
+      "id": "E09",
+      "from": "N12",
+      "to": "N11",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 128.4,
+      "lengthMeters": 141.2,
+      "minutes": 0.56,
+      "waypoints": [
+        [
+          505,
+          260
+        ],
+        [
+          495,
+          388
+        ]
+      ]
+    },
+    {
+      "id": "E10",
+      "from": "N06",
+      "to": "N08",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 97.5,
+      "lengthMeters": 107.3,
+      "minutes": 0.36,
+      "waypoints": [
+        [
+          288,
+          335
+        ],
+        [
+          332,
+          422
+        ]
+      ]
+    },
+    {
+      "id": "E11",
+      "from": "N07",
+      "to": "N08",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 45.2,
+      "lengthMeters": 49.7,
+      "minutes": 0.2,
+      "waypoints": [
+        [
+          358,
+          385
+        ],
+        [
+          332,
+          422
+        ]
+      ]
+    },
+    {
+      "id": "E12",
+      "from": "N08",
+      "to": "N10",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 57.3,
+      "lengthMeters": 63,
+      "minutes": 0.21,
+      "waypoints": [
+        [
+          332,
+          422
+        ],
+        [
+          275,
+          428
+        ]
+      ]
+    },
+    {
+      "id": "E13",
+      "from": "N10",
+      "to": "N09",
+      "speedKmh": 20,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 97.1,
+      "lengthMeters": 106.8,
+      "minutes": 0.32,
+      "waypoints": [
+        [
+          275,
+          428
+        ],
+        [
+          178,
+          432
+        ]
+      ]
+    },
+    {
+      "id": "E14",
+      "from": "N08",
+      "to": "N11",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 166.5,
+      "lengthMeters": 183.2,
+      "minutes": 0.61,
+      "waypoints": [
+        [
+          332,
+          422
+        ],
+        [
+          495,
+          388
+        ]
+      ]
+    },
+    {
+      "id": "E15",
+      "from": "N11",
+      "to": "N13",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 109.9,
+      "lengthMeters": 120.9,
+      "minutes": 0.48,
+      "waypoints": [
+        [
+          495,
+          388
+        ],
+        [
+          578,
+          460
+        ]
+      ]
+    },
+    {
+      "id": "E16",
+      "from": "N08",
+      "to": "N14",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 71.5,
+      "lengthMeters": 78.7,
+      "minutes": 0.26,
+      "waypoints": [
+        [
+          332,
+          422
+        ],
+        [
+          380,
+          475
+        ]
+      ]
+    },
+    {
+      "id": "E17",
+      "from": "N08",
+      "to": "N15",
+      "speedKmh": 20,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 93,
+      "lengthMeters": 102.3,
+      "minutes": 0.31,
+      "waypoints": [
+        [
+          332,
+          422
+        ],
+        [
+          332,
+          515
+        ]
+      ]
+    },
+    {
+      "id": "E18",
+      "from": "N10",
+      "to": "N15",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 104,
+      "lengthMeters": 114.4,
+      "minutes": 0.46,
+      "waypoints": [
+        [
+          275,
+          428
+        ],
+        [
+          332,
+          515
+        ]
+      ]
+    },
+    {
+      "id": "E19",
+      "from": "N15",
+      "to": "N16",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 63.1,
+      "lengthMeters": 69.4,
+      "minutes": 0.28,
+      "waypoints": [
+        [
+          332,
+          515
+        ],
+        [
+          305,
+          572
+        ]
+      ]
+    },
+    {
+      "id": "E20",
+      "from": "N15",
+      "to": "N17",
+      "speedKmh": 20,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 86.5,
+      "lengthMeters": 95.2,
+      "minutes": 0.29,
+      "waypoints": [
+        [
+          332,
+          515
+        ],
+        [
+          365,
+          595
+        ]
+      ]
+    },
+    {
+      "id": "E21",
+      "from": "N14",
+      "to": "N17",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 120.9,
+      "lengthMeters": 133,
+      "minutes": 0.44,
+      "waypoints": [
+        [
+          380,
+          475
+        ],
+        [
+          365,
+          595
+        ]
+      ]
+    },
+    {
+      "id": "E22",
+      "from": "N16",
+      "to": "N19",
+      "speedKmh": 15,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 129.4,
+      "lengthMeters": 142.3,
+      "minutes": 0.57,
+      "waypoints": [
+        [
+          305,
+          572
+        ],
+        [
+          395,
+          665
+        ]
+      ]
+    },
+    {
+      "id": "E23",
+      "from": "N17",
+      "to": "N20",
+      "speedKmh": 22,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 78.3,
+      "lengthMeters": 86.1,
+      "minutes": 0.23,
+      "waypoints": [
+        [
+          365,
+          595
+        ],
+        [
+          435,
+          630
+        ]
+      ]
+    },
+    {
+      "id": "E24",
+      "from": "N18",
+      "to": "N20",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 71.6,
+      "lengthMeters": 78.8,
+      "minutes": 0.26,
+      "waypoints": [
+        [
+          465,
+          565
+        ],
+        [
+          435,
+          630
+        ]
+      ]
+    },
+    {
+      "id": "E25",
+      "from": "N19",
+      "to": "N20",
+      "speedKmh": 18,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 53.2,
+      "lengthMeters": 58.5,
+      "minutes": 0.2,
+      "waypoints": [
+        [
+          395,
+          665
+        ],
+        [
+          435,
+          630
+        ]
+      ]
+    },
+    {
+      "id": "E26",
+      "from": "N20",
+      "to": "N21",
+      "speedKmh": 25,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 189,
+      "lengthMeters": 207.9,
+      "minutes": 0.5,
+      "waypoints": [
+        [
+          435,
+          630
+        ],
+        [
+          550,
+          780
+        ]
+      ]
+    },
+    {
+      "id": "E27",
+      "from": "N21",
+      "to": "N22",
+      "speedKmh": 20,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 60.4,
+      "lengthMeters": 66.4,
+      "minutes": 0.2,
+      "waypoints": [
+        [
+          550,
+          780
+        ],
+        [
+          605,
+          805
+        ]
+      ]
+    },
+    {
+      "id": "E28",
+      "from": "N18",
+      "to": "N21",
+      "speedKmh": 20,
+      "oneWay": false,
+      "status": "open",
+      "lengthPx": 231.2,
+      "lengthMeters": 254.3,
+      "minutes": 0.76,
+      "waypoints": [
+        [
+          465,
+          565
+        ],
+        [
+          550,
+          780
+        ]
+      ]
+    }
+  ],
+  "stops": [
+    {
+      "id": "S01",
+      "name": "North Entrance Gate",
+      "nodeId": "N01",
+      "type": "gate"
+    },
+    {
+      "id": "S02",
+      "name": "North Parking & Security",
+      "nodeId": "N02",
+      "type": "parking"
+    },
+    {
+      "id": "S03",
+      "name": "North Academic Block (Block A)",
+      "nodeId": "N03",
+      "type": "building"
+    },
+    {
+      "id": "S04",
+      "name": "Central Administrative Block",
+      "nodeId": "N04",
+      "type": "admin"
+    },
+    {
+      "id": "S05",
+      "name": "West Academic Wing (Block B)",
+      "nodeId": "N06",
+      "type": "building"
+    },
+    {
+      "id": "S06",
+      "name": "Girls Hostel & Mess",
+      "nodeId": "N07",
+      "type": "hostel"
+    },
+    {
+      "id": "S07",
+      "name": "Sports Complex & Cricket Pavilion",
+      "nodeId": "N09",
+      "type": "sports"
+    },
+    {
+      "id": "S08",
+      "name": "Boys Hostel Strip (Tagore & Raman)",
+      "nodeId": "N11",
+      "type": "hostel"
+    },
+    {
+      "id": "S09",
+      "name": "East Hostel & Playground Hub",
+      "nodeId": "N12",
+      "type": "hostel"
+    },
+    {
+      "id": "S10",
+      "name": "Staff & Faculty Housing",
+      "nodeId": "N13",
+      "type": "building"
+    },
+    {
+      "id": "S11",
+      "name": "Central Academic Megablock",
+      "nodeId": "N14",
+      "type": "building"
+    },
+    {
+      "id": "S12",
+      "name": "Student Center & Cafeteria",
+      "nodeId": "N16",
+      "type": "building"
+    },
+    {
+      "id": "S13",
+      "name": "Gateway Landmark Building (Central Library)",
+      "nodeId": "N17",
+      "type": "landmark"
+    },
+    {
+      "id": "S14",
+      "name": "South Academic Complex",
+      "nodeId": "N18",
+      "type": "building"
+    },
+    {
+      "id": "S15",
+      "name": "South Parking & Field Loop",
+      "nodeId": "N19",
+      "type": "parking"
+    },
+    {
+      "id": "S16",
+      "name": "South-East Main Entrance Gate",
+      "nodeId": "N22",
+      "type": "gate"
+    }
   ]
 }

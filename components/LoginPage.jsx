@@ -77,12 +77,12 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between relative overflow-hidden">
+    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex flex-col justify-between relative overflow-y-auto">
       {/* Background radial glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-orange-500/10 via-sky-500/5 to-transparent blur-3xl pointer-events-none" />
 
       {/* Top University Branding Header */}
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-6 py-4 flex items-center justify-between z-10">
+      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-6 py-3.5 flex items-center justify-between z-10 shrink-0">
         <div className="flex items-center gap-3">
           <div className="brand-crest shadow-lg shadow-orange-500/20">GU</div>
           <div>
@@ -103,15 +103,6 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
 
         {/* Global Reference Modals */}
         <div className="flex items-center gap-2">
-          {onOpenProblemSolution && (
-            <button
-              onClick={onOpenProblemSolution}
-              className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs font-semibold text-slate-200 transition-all flex items-center gap-1.5"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-orange-400" />
-              <span className="hidden sm:inline">Problem Guide</span>
-            </button>
-          )}
           {onOpenComparison && (
             <button
               onClick={onOpenComparison}
@@ -121,18 +112,27 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
               <span className="hidden sm:inline">Solo vs Pool Report</span>
             </button>
           )}
+
+          <a
+            href="/verify-map"
+            className="px-3 py-1.5 rounded-xl bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/40 text-xs font-semibold text-orange-300 transition-all flex items-center gap-1.5"
+            title="Inspect Master Plan Blueprint & Extracted Graph"
+          >
+            <MapPin className="w-3.5 h-3.5 text-orange-400" />
+            <span>Blueprint Overlay</span>
+          </a>
         </div>
       </header>
 
       {/* Central Login Portal Container */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-5xl mx-auto w-full z-10">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-6 max-w-5xl mx-auto w-full z-10">
         {/* Title & Introduction */}
-        <div className="text-center mb-8 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold mb-3">
+        <div className="text-center mb-5 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold mb-2">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Role-Based Campus Transit Authentication</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-1.5">
             Select Your Designated Portal
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
@@ -141,7 +141,7 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
         </div>
 
         {/* 3 Portal Selection Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 w-full mb-5">
           {/* 1. Student Rider Portal Card */}
           <button
             type="button"

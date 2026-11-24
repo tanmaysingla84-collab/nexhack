@@ -15,7 +15,8 @@ import {
   Bus,
   Shield,
   LogOut,
-  GraduationCap
+  GraduationCap,
+  Map
 } from 'lucide-react';
 import { playSound } from './AudioEffects';
 
@@ -162,19 +163,6 @@ export default function TopNavbar({
           </>
         )}
 
-        {/* Problem Solution Modal Button */}
-        <button
-          className="btn-secondary btn-sm hidden xl:flex items-center gap-1.5"
-          onClick={() => {
-            if (soundEnabled) playSound('click');
-            onOpenProblemSolution();
-          }}
-          title="View Problem Statement, Architecture & Formulas"
-        >
-          <BookOpen className="w-3.5 h-3.5 text-sky-400" />
-          <span>Solution Guide</span>
-        </button>
-
         {/* Comparison Modal Button */}
         <button
           className="btn-secondary btn-sm hidden md:flex items-center gap-1.5"
@@ -187,6 +175,16 @@ export default function TopNavbar({
           <BarChart3 className="w-3.5 h-3.5 text-orange-400" />
           <span>Solo vs Pool</span>
         </button>
+
+        {/* Blueprint Ground-Truth Overlay Page */}
+        <a
+          href="/verify-map"
+          className="btn-secondary btn-sm hidden lg:flex items-center gap-1.5"
+          title="Inspect Ground-Truth Master Plan Blueprint & Road Graph Overlay"
+        >
+          <Map className="w-3.5 h-3.5 text-orange-400" />
+          <span>Blueprint Overlay</span>
+        </a>
 
         {/* Sound FX Toggle */}
         <button
