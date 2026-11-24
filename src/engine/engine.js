@@ -279,12 +279,34 @@ export function createSimulation({
   }
 
   /**
-   * Disruption: Vehicle breakdown
+   * Clears vehicle breakdown and re-commissions into service
+   */
+  function repairVehicle(vehicleId) {
+    const v = vehicles.find(veh => veh.id === vehicleId);
+    if (!v) return { ok: false, reason: 'Vehicle not found' };
+    if (v.status !== 'broken') return { ok: false, reason: 'Vehicle is not broken' };
+
+    v.status = 'idle';
+    v.occupancy = 0;
+    v.onboard = [];
+    v.stops = [];
+    v.route = [];
+    v.targetNode = null;
+    v.progressFraction = 0;
+    logEvent('maintenance', `Vehicle ${v.id} repaired and re-commissioned into active fleet service!`, { vehicleId });
+    notify();
+    return { ok: true, status: 'idle' };
+  }
+
+  /**
+   * Disruption: Vehicle breakdown (or clears breakdown if already broken)
    */
   function breakVehicle(vehicleId) {
     const v = vehicles.find(veh => veh.id === vehicleId);
-    if (!v) return;
-    if (v.status === 'broken') return;
+    if (!v) return { ok: false, reason: 'Vehicle not found' };
+    if (v.status === 'broken') {
+      return repairVehicle(vehicleId);
+    }
 
     v.status = 'broken';
     logEvent('breakdown', `Vehicle ${v.id} broke down at node ${v.currentNode}!`, { vehicleId });
@@ -614,6 +636,7 @@ export function createSimulation({
     addRequest,
     cancelRequest,
     breakVehicle,
+    repairVehicle,
     closeRoad,
     reopenRoad,
     getState,

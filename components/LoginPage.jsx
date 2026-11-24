@@ -77,12 +77,12 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between relative overflow-hidden">
+    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex flex-col justify-between relative overflow-y-auto">
       {/* Background radial glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-orange-500/10 via-sky-500/5 to-transparent blur-3xl pointer-events-none" />
 
       {/* Top University Branding Header */}
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-6 py-4 flex items-center justify-between z-10">
+      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-6 py-3.5 flex items-center justify-between z-10 shrink-0">
         <div className="flex items-center gap-3">
           <div className="brand-crest shadow-lg shadow-orange-500/20">GU</div>
           <div>
@@ -103,15 +103,6 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
 
         {/* Global Reference Modals */}
         <div className="flex items-center gap-2">
-          {onOpenProblemSolution && (
-            <button
-              onClick={onOpenProblemSolution}
-              className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs font-semibold text-slate-200 transition-all flex items-center gap-1.5"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-orange-400" />
-              <span className="hidden sm:inline">Problem Guide</span>
-            </button>
-          )}
           {onOpenComparison && (
             <button
               onClick={onOpenComparison}
@@ -121,18 +112,27 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
               <span className="hidden sm:inline">Solo vs Pool Report</span>
             </button>
           )}
+
+          <a
+            href="/verify-map"
+            className="px-3 py-1.5 rounded-xl bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/40 text-xs font-semibold text-orange-300 transition-all flex items-center gap-1.5"
+            title="Inspect Master Plan Blueprint & Extracted Graph"
+          >
+            <MapPin className="w-3.5 h-3.5 text-orange-400" />
+            <span>Blueprint Overlay</span>
+          </a>
         </div>
       </header>
 
       {/* Central Login Portal Container */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-5xl mx-auto w-full z-10">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-6 max-w-5xl mx-auto w-full z-10">
         {/* Title & Introduction */}
-        <div className="text-center mb-8 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold mb-3">
+        <div className="text-center mb-5 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold mb-2">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Role-Based Campus Transit Authentication</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-1.5">
             Select Your Designated Portal
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
@@ -141,7 +141,7 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
         </div>
 
         {/* 3 Portal Selection Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 w-full mb-5">
           {/* 1. Student Rider Portal Card */}
           <button
             type="button"
@@ -219,9 +219,9 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                 </span>
               </div>
               <div>
-                <h3 className="font-extrabold text-base text-white">Shuttle Captain Cockpit</h3>
+                <h3 className="font-extrabold text-base text-white">Campus Buses & Driver Portal</h3>
                 <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                  Driver tablet HUD. Live stop-by-stop passenger manifest, boarding checklists, and maintenance break reports.
+                  Bus driver console. Receive live incoming ride notifications, accept passenger trips, and view route stops.
                 </p>
               </div>
             </div>
@@ -371,14 +371,14 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                   <Bus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-base text-white">Shuttle Captain Terminal Login</h2>
-                  <p className="text-xs text-slate-400">Select assigned campus vehicle and driver credentials</p>
+                  <h2 className="font-bold text-base text-white">Bus Driver Terminal Login</h2>
+                  <p className="text-xs text-slate-400">Select assigned campus bus and driver credentials</p>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Select Assigned Shuttle
+                  Select Assigned Campus Bus
                 </label>
                 <div className="relative">
                   <Bus className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
@@ -387,9 +387,9 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                     onChange={(e) => setCaptainVehicle(e.target.value)}
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500"
                   >
-                    <option value="V1">Shuttle V1 (Campus Express - Capacity: 6)</option>
-                    <option value="V2">Shuttle V2 (Hostel Shuttle - Capacity: 6)</option>
-                    <option value="V3">Shuttle V3 (Library Loop - Capacity: 4)</option>
+                    <option value="V1">Campus Bus V1 (Campus Express - Capacity: 4)</option>
+                    <option value="V2">Campus Bus V2 (Hostel Shuttle - Capacity: 4)</option>
+                    <option value="V3">Campus Bus V3 (Haryana Regional Bus - Capacity: 4)</option>
                   </select>
                 </div>
               </div>
@@ -440,7 +440,7 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                   type="submit"
                   className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-bold text-sm text-white shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2"
                 >
-                  <span>Launch Shuttle {captainVehicle} Cockpit</span>
+                  <span>Launch Campus Bus {captainVehicle} Terminal</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
@@ -450,7 +450,7 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                   className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700/80 text-xs font-semibold text-slate-300 border border-slate-700 transition-all flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>⚡ Quick 1-Click Demo Login as Captain Rajesh (Shuttle V1)</span>
+                  <span>⚡ Quick 1-Click Demo Login as Driver Rajesh (Bus V1)</span>
                 </button>
               </div>
             </form>

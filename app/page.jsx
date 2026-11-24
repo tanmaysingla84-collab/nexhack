@@ -41,6 +41,7 @@ export default function CampusPoolPage() {
   const [showProblemSolution, setShowProblemSolution] = useState(false);
   const [inspectedVehicle, setInspectedVehicle] = useState(null);
   const [trackedVehicleId, setTrackedVehicleId] = useState(null);
+  const [studentActiveRideId, setStudentActiveRideId] = useState(null);
 
   // Scripted Demo State
   const [demoActive, setDemoActive] = useState(false);
@@ -105,6 +106,33 @@ export default function CampusPoolPage() {
       url.search = '';
       window.history.replaceState({}, '', url.toString());
     } catch (e) {}
+  };
+
+  const handleSwitchRole = (newRole) => {
+    let nextSession = null;
+    if (newRole === 'student') {
+      nextSession = {
+        role: 'student',
+        user: { name: 'Aarav Sharma', id: 'GU24-CSE-1042', credits: 160 }
+      };
+    } else if (newRole === 'captain') {
+      nextSession = {
+        role: 'captain',
+        user: { name: 'Captain Rajesh Kumar', badge: 'CAPT-V1', vehicleId: 'V1' }
+      };
+      setTrackedVehicleId('V1');
+    } else if (newRole === 'admin') {
+      nextSession = {
+        role: 'admin',
+        user: { name: 'Chief Dispatcher Mehta', clearance: 'Tier-1 Master Dispatch Authority' }
+      };
+    }
+    if (nextSession) {
+      setCurrentUser(nextSession);
+      try {
+        localStorage.setItem('geeta_transit_user', JSON.stringify(nextSession));
+      } catch (e) {}
+    }
   };
 
   const demoSteps = [
@@ -285,7 +313,11 @@ export default function CampusPoolPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(req)
       });
-      return await res.json();
+      const data = await res.json();
+      if (data?.requestId) {
+        setStudentActiveRideId(data.requestId);
+      }
+      return data;
     } catch (e) {
       console.error('Add request error:', e);
     }
@@ -296,6 +328,9 @@ export default function CampusPoolPage() {
       const res = await fetch(`/api/requests/${requestId}/cancel`, {
         method: 'POST'
       });
+      if (requestId === studentActiveRideId) {
+        setStudentActiveRideId(null);
+      }
       return await res.json();
     } catch (e) {
       console.error('Cancel request error:', e);
@@ -350,7 +385,7 @@ export default function CampusPoolPage() {
   // If user is not logged in or during initial mount, present dedicated Portal Login Hub
   if (mounted && !currentUser) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="min-h-screen w-full bg-slate-950 text-slate-100 overflow-y-auto">
         <LoginPage
           onLogin={handleLogin}
           onOpenProblemSolution={() => setShowProblemSolution(true)}
@@ -365,16 +400,19 @@ export default function CampusPoolPage() {
           seed={42}
           campus={campusData}
         />
-
-        <ProblemSolutionModal
-          isOpen={showProblemSolution}
-          onClose={() => setShowProblemSolution(false)}
-        />
       </div>
     );
   }
 
   const role = currentUser?.role || 'student';
+
+  // Compute active ride for the student
+  const activeStudentRide = (simState?.requests || []).find(r =>
+    (r.id === studentActiveRideId ||
+     (currentUser?.user?.name && r.riderName?.toLowerCase().includes(currentUser.user.name.toLowerCase())) ||
+     (currentUser?.user?.id && r.studentId === currentUser.user.id)) &&
+    ['pending_driver', 'waiting', 'assigned', 'onboard'].includes(r.status)
+  ) || (studentActiveRideId ? (simState?.requests || []).find(r => r.id === studentActiveRideId && ['pending_driver', 'waiting', 'assigned', 'onboard', 'rejected'].includes(r.status)) : null);
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100">
@@ -417,6 +455,8 @@ export default function CampusPoolPage() {
             <div className="w-full h-full min-h-[520px]">
               <LeafletMap
                 state={simState}
+                userRole={role}
+                activeRide={activeStudentRide}
                 onNodeClick={(node) => {
                   if (soundEnabled) playSound('click');
                   handleAddRequest({
@@ -428,7 +468,7 @@ export default function CampusPoolPage() {
                     riderName: currentUser?.user?.name || 'Aarav Sharma'
                   });
                 }}
-                liveTrackVehicleId={trackedVehicleId}
+                liveTrackVehicleId={activeStudentRide?.vehicleId || trackedVehicleId}
                 onVehicleClick={(v) => {
                   if (soundEnabled) playSound('click');
                   setInspectedVehicle(v);
@@ -446,12 +486,14 @@ export default function CampusPoolPage() {
                 onCancelRequest={handleCancelRequest}
                 soundEnabled={soundEnabled}
                 currentUser={currentUser?.user}
+                activeRideId={studentActiveRideId}
+                onRidePlaced={setStudentActiveRideId}
               />
             </div>
           </div>
         )}
 
-        {/* 2. SHUTTLE CAPTAIN COCKPIT DEDICATED TERMINAL */}
+        {/* 2. CAMPUS BUSES & DRIVER DEDICATED TERMINAL */}
         {role === 'captain' && (
           <div className="app-main-layout">
             {/* Spatial Leaflet Map Container (Tracking Captain's Vehicle) */}
@@ -466,7 +508,7 @@ export default function CampusPoolPage() {
               />
             </div>
 
-            {/* Right Captain Cockpit Sidebar */}
+            {/* Right Bus Driver Portal Sidebar */}
             <div className="w-full h-full overflow-y-auto pr-1">
               <CaptainView
                 vehicles={simState?.vehicles || []}
@@ -527,11 +569,6 @@ export default function CampusPoolPage() {
         onClose={() => setShowComparison(false)}
         seed={42}
         campus={campusData}
-      />
-
-      <ProblemSolutionModal
-        isOpen={showProblemSolution}
-        onClose={() => setShowProblemSolution(false)}
       />
 
       {inspectedVehicle && (
