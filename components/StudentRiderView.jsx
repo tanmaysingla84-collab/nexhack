@@ -161,9 +161,9 @@ export default function StudentRiderView({
               <span className="font-bold text-orange-400">{nodeMap.get(activeRide.dropoff) || activeRide.dropoff}</span>
             </div>
             <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-800">
-              <span className="text-slate-400">Zone:</span>
+              <span className="text-slate-400">Service Zone:</span>
               <span className="font-semibold text-sky-400">
-                {activeRide.pickup?.startsWith('H') || activeRide.dropoff?.startsWith('H') ? '🗺️ Anywhere in Haryana' : '🏫 Inside Campus Shuttle'}
+                {activeRide.pickup?.startsWith('H') || activeRide.dropoff?.startsWith('H') ? '🏙️ Outside Cities (Haryana)' : '🏫 Inside Cities'}
               </span>
             </div>
           </div>
@@ -272,7 +272,7 @@ export default function StudentRiderView({
           </span>
         </div>
 
-        {/* 🗺️ REGIONAL SERVICE ZONE SELECTOR: INSIDE CAMPUS VS ANYWHERE IN HARYANA */}
+        {/* 🗺️ REGIONAL SERVICE ZONE SELECTOR: INSIDE CITIES VS OUTSIDE CITIES */}
         <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
           <button
             type="button"
@@ -287,7 +287,7 @@ export default function StudentRiderView({
             }}
           >
             <Building className="w-3.5 h-3.5" />
-            <span>Inside Campus</span>
+            <span>Inside Cities</span>
           </button>
 
           <button
@@ -303,7 +303,7 @@ export default function StudentRiderView({
             }}
           >
             <MapIcon className="w-3.5 h-3.5" />
-            <span>Anywhere Haryana</span>
+            <span>Outside Cities</span>
           </button>
         </div>
 
@@ -316,7 +316,7 @@ export default function StudentRiderView({
                 PICKUP STATION
               </span>
               <span className="text-[10px] text-slate-500 uppercase">
-                {region === 'campus' ? 'Campus Stops' : 'Haryana Cities & Hubs'}
+                {region === 'campus' ? 'Inside Cities & Campus Stops' : 'Outside Cities (Haryana)'}
               </span>
             </label>
             <select
@@ -350,7 +350,7 @@ export default function StudentRiderView({
                 DROPOFF DESTINATION
               </span>
               <span className="text-[10px] text-slate-500 uppercase">
-                {region === 'campus' ? 'Campus Stops' : 'Haryana Cities & Hubs'}
+                {region === 'campus' ? 'Inside Cities & Campus Stops' : 'Outside Cities (Haryana)'}
               </span>
             </label>
             <select
@@ -379,7 +379,7 @@ export default function StudentRiderView({
             >
               <div className="flex items-center justify-between text-xs font-bold mb-0.5">
                 <span>⚡ Shared Pool</span>
-                <span className="text-[10px] text-orange-400">{region === 'haryana' ? '25 pts' : '10 pts'}</span>
+                <span className="text-[10px] text-orange-400 font-extrabold">{region === 'haryana' ? '5 pts' : '2 pts'}</span>
               </div>
               <p className="text-[10px] text-slate-400 leading-tight">
                 Smart dynamic pooling • 1.5x detour bound
@@ -399,7 +399,7 @@ export default function StudentRiderView({
             >
               <div className="flex items-center justify-between text-xs font-bold mb-0.5">
                 <span>🚀 Solo Direct</span>
-                <span className="text-[10px] text-sky-400">{region === 'haryana' ? '60 pts' : '25 pts'}</span>
+                <span className="text-[10px] text-sky-400 font-extrabold">{region === 'haryana' ? '10 pts' : '5 pts'}</span>
               </div>
               <p className="text-[10px] text-slate-400 leading-tight">
                 Direct unshared trip • Zero detour

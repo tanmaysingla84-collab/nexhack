@@ -334,6 +334,126 @@
       "y": 650,
       "lat": 29.15,
       "lng": 75.72
+    },
+    {
+      "id": "H11",
+      "name": "Faridabad Bata Chowk Hub",
+      "type": "regional",
+      "region": "haryana",
+      "x": 670,
+      "y": 990,
+      "lat": 28.38,
+      "lng": 77.31
+    },
+    {
+      "id": "H12",
+      "name": "Panchkula Sector 5 Center",
+      "type": "regional",
+      "region": "haryana",
+      "x": 370,
+      "y": 15,
+      "lat": 30.69,
+      "lng": 76.86
+    },
+    {
+      "id": "H13",
+      "name": "Yamunanagar Jagadhri Hub",
+      "type": "regional",
+      "region": "haryana",
+      "x": 550,
+      "y": 25,
+      "lat": 30.13,
+      "lng": 77.29
+    },
+    {
+      "id": "H14",
+      "name": "Bhiwani Clock Tower Hub",
+      "type": "regional",
+      "region": "haryana",
+      "x": 80,
+      "y": 780,
+      "lat": 28.79,
+      "lng": 76.13
+    },
+    {
+      "id": "H15",
+      "name": "Sirsa Bus Stand Terminal",
+      "type": "regional",
+      "region": "haryana",
+      "x": 30,
+      "y": 550,
+      "lat": 29.53,
+      "lng": 75.03
+    },
+    {
+      "id": "H16",
+      "name": "Bahadurgarh City Park Metro",
+      "type": "regional",
+      "region": "haryana",
+      "x": 600,
+      "y": 880,
+      "lat": 28.69,
+      "lng": 76.92
+    },
+    {
+      "id": "H17",
+      "name": "Jind Railway Junction Depot",
+      "type": "regional",
+      "region": "haryana",
+      "x": 180,
+      "y": 400,
+      "lat": 29.31,
+      "lng": 76.31
+    },
+    {
+      "id": "H18",
+      "name": "Kaithal Pehlwan Chowk Hub",
+      "type": "regional",
+      "region": "haryana",
+      "x": 260,
+      "y": 200,
+      "lat": 29.8,
+      "lng": 76.4
+    },
+    {
+      "id": "H19",
+      "name": "Rewari Heritage Transit Hub",
+      "type": "regional",
+      "region": "haryana",
+      "x": 500,
+      "y": 1000,
+      "lat": 28.19,
+      "lng": 76.62
+    },
+    {
+      "id": "H20",
+      "name": "Palwal NH-19 Transit Point",
+      "type": "regional",
+      "region": "haryana",
+      "x": 680,
+      "y": 1010,
+      "lat": 28.14,
+      "lng": 77.33
+    },
+    {
+      "id": "H21",
+      "name": "Jhajjar Central Bus Stand",
+      "type": "regional",
+      "region": "haryana",
+      "x": 200,
+      "y": 860,
+      "lat": 28.61,
+      "lng": 76.65
+    },
+    {
+      "id": "H22",
+      "name": "Fatehabad City Transit Post",
+      "type": "regional",
+      "region": "haryana",
+      "x": 35,
+      "y": 590,
+      "lat": 29.51,
+      "lng": 75.45
     }
   ],
   "edges": [
@@ -1144,6 +1264,246 @@
           650
         ]
       ]
+    },
+    {
+      "id": "EH12",
+      "from": "H08",
+      "to": "H11",
+      "speedKmh": 60,
+      "minutes": 0.03,
+      "lengthMeters": 31.1,
+      "lengthPx": 28.3,
+      "status": "open",
+      "waypoints": [
+        [
+          650,
+          1010
+        ],
+        [
+          670,
+          990
+        ]
+      ]
+    },
+    {
+      "id": "EH13",
+      "from": "H09",
+      "to": "H12",
+      "speedKmh": 60,
+      "minutes": 0.01,
+      "lengthMeters": 12.3,
+      "lengthPx": 11.2,
+      "status": "open",
+      "waypoints": [
+        [
+          380,
+          20
+        ],
+        [
+          370,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "EH14",
+      "from": "H05",
+      "to": "H13",
+      "speedKmh": 60,
+      "minutes": 0.06,
+      "lengthMeters": 55.2,
+      "lengthPx": 50.2,
+      "status": "open",
+      "waypoints": [
+        [
+          500,
+          30
+        ],
+        [
+          550,
+          25
+        ]
+      ]
+    },
+    {
+      "id": "EH15",
+      "from": "H06",
+      "to": "H14",
+      "speedKmh": 60,
+      "minutes": 0.08,
+      "lengthMeters": 80.1,
+      "lengthPx": 72.8,
+      "status": "open",
+      "waypoints": [
+        [
+          100,
+          850
+        ],
+        [
+          80,
+          780
+        ]
+      ]
+    },
+    {
+      "id": "EH16",
+      "from": "H10",
+      "to": "H15",
+      "speedKmh": 60,
+      "minutes": 0.11,
+      "lengthMeters": 110.6,
+      "lengthPx": 100.5,
+      "status": "open",
+      "waypoints": [
+        [
+          40,
+          650
+        ],
+        [
+          30,
+          550
+        ]
+      ]
+    },
+    {
+      "id": "EH17",
+      "from": "H07",
+      "to": "H16",
+      "speedKmh": 60,
+      "minutes": 0.16,
+      "lengthMeters": 163.6,
+      "lengthPx": 148.7,
+      "status": "open",
+      "waypoints": [
+        [
+          710,
+          980
+        ],
+        [
+          600,
+          880
+        ]
+      ]
+    },
+    {
+      "id": "EH18",
+      "from": "N01",
+      "to": "H17",
+      "speedKmh": 50,
+      "minutes": 0.36,
+      "lengthMeters": 299.4,
+      "lengthPx": 272.2,
+      "status": "open",
+      "waypoints": [
+        [
+          312,
+          162
+        ],
+        [
+          180,
+          400
+        ]
+      ]
+    },
+    {
+      "id": "EH19",
+      "from": "H17",
+      "to": "H18",
+      "speedKmh": 55,
+      "minutes": 0.26,
+      "lengthMeters": 236.9,
+      "lengthPx": 215.4,
+      "status": "open",
+      "waypoints": [
+        [
+          180,
+          400
+        ],
+        [
+          260,
+          200
+        ]
+      ]
+    },
+    {
+      "id": "EH20",
+      "from": "H08",
+      "to": "H19",
+      "speedKmh": 60,
+      "minutes": 0.17,
+      "lengthMeters": 165.3,
+      "lengthPx": 150.3,
+      "status": "open",
+      "waypoints": [
+        [
+          650,
+          1010
+        ],
+        [
+          500,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "EH21",
+      "from": "H11",
+      "to": "H20",
+      "speedKmh": 60,
+      "minutes": 0.02,
+      "lengthMeters": 24.6,
+      "lengthPx": 22.4,
+      "status": "open",
+      "waypoints": [
+        [
+          670,
+          990
+        ],
+        [
+          680,
+          1010
+        ]
+      ]
+    },
+    {
+      "id": "EH22",
+      "from": "H06",
+      "to": "H21",
+      "speedKmh": 50,
+      "minutes": 0.13,
+      "lengthMeters": 110.6,
+      "lengthPx": 100.5,
+      "status": "open",
+      "waypoints": [
+        [
+          100,
+          850
+        ],
+        [
+          200,
+          860
+        ]
+      ]
+    },
+    {
+      "id": "EH23",
+      "from": "H10",
+      "to": "H22",
+      "speedKmh": 60,
+      "minutes": 0.07,
+      "lengthMeters": 66.2,
+      "lengthPx": 60.2,
+      "status": "open",
+      "waypoints": [
+        [
+          40,
+          650
+        ],
+        [
+          35,
+          590
+        ]
+      ]
     }
   ],
   "stops": [
@@ -1326,6 +1686,90 @@
       "id": "S26",
       "name": "Hisar Bus Terminal",
       "nodeId": "H10",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S27",
+      "name": "Faridabad Bata Chowk Hub",
+      "nodeId": "H11",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S28",
+      "name": "Panchkula Sector 5 Center",
+      "nodeId": "H12",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S29",
+      "name": "Yamunanagar Jagadhri Hub",
+      "nodeId": "H13",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S30",
+      "name": "Bhiwani Clock Tower Hub",
+      "nodeId": "H14",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S31",
+      "name": "Sirsa Bus Stand Terminal",
+      "nodeId": "H15",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S32",
+      "name": "Bahadurgarh City Park Metro",
+      "nodeId": "H16",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S33",
+      "name": "Jind Railway Junction Depot",
+      "nodeId": "H17",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S34",
+      "name": "Kaithal Pehlwan Chowk Hub",
+      "nodeId": "H18",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S35",
+      "name": "Rewari Heritage Transit Hub",
+      "nodeId": "H19",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S36",
+      "name": "Palwal NH-19 Transit Point",
+      "nodeId": "H20",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S37",
+      "name": "Jhajjar Central Bus Stand",
+      "nodeId": "H21",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S38",
+      "name": "Fatehabad City Transit Post",
+      "nodeId": "H22",
       "type": "regional",
       "region": "haryana"
     }

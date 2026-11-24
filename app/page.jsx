@@ -108,6 +108,33 @@ export default function CampusPoolPage() {
     } catch (e) {}
   };
 
+  const handleSwitchRole = (newRole) => {
+    let nextSession = null;
+    if (newRole === 'student') {
+      nextSession = {
+        role: 'student',
+        user: { name: 'Aarav Sharma', id: 'GU24-CSE-1042', credits: 160 }
+      };
+    } else if (newRole === 'captain') {
+      nextSession = {
+        role: 'captain',
+        user: { name: 'Captain Rajesh Kumar', badge: 'CAPT-V1', vehicleId: 'V1' }
+      };
+      setTrackedVehicleId('V1');
+    } else if (newRole === 'admin') {
+      nextSession = {
+        role: 'admin',
+        user: { name: 'Chief Dispatcher Mehta', clearance: 'Tier-1 Master Dispatch Authority' }
+      };
+    }
+    if (nextSession) {
+      setCurrentUser(nextSession);
+      try {
+        localStorage.setItem('geeta_transit_user', JSON.stringify(nextSession));
+      } catch (e) {}
+    }
+  };
+
   const demoSteps = [
     {
       title: 'Step 1/7: Morning Baseline',
@@ -384,8 +411,8 @@ export default function CampusPoolPage() {
     (r.id === studentActiveRideId ||
      (currentUser?.user?.name && r.riderName?.toLowerCase().includes(currentUser.user.name.toLowerCase())) ||
      (currentUser?.user?.id && r.studentId === currentUser.user.id)) &&
-    ['waiting', 'assigned', 'onboard'].includes(r.status)
-  ) || (studentActiveRideId ? (simState?.requests || []).find(r => r.id === studentActiveRideId && ['waiting', 'assigned', 'onboard'].includes(r.status)) : null);
+    ['pending_driver', 'waiting', 'assigned', 'onboard'].includes(r.status)
+  ) || (studentActiveRideId ? (simState?.requests || []).find(r => r.id === studentActiveRideId && ['pending_driver', 'waiting', 'assigned', 'onboard', 'rejected'].includes(r.status)) : null);
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100">

@@ -148,7 +148,7 @@ export default function CaptainView({
                   <div className="flex items-center justify-between text-[11px] pt-0.5 border-t border-slate-800">
                     <span className="text-slate-500">Service Zone:</span>
                     <span className="font-semibold text-sky-400">
-                      {r.pickup?.startsWith('H') || r.dropoff?.startsWith('H') ? '🗺️ Haryana Regional' : '🏫 Inside Campus Shuttle'}
+                      {r.pickup?.startsWith('H') || r.dropoff?.startsWith('H') ? '🏙️ Outside Cities (Haryana)' : '🏫 Inside Cities'}
                     </span>
                   </div>
                 </div>
@@ -307,16 +307,18 @@ export default function CaptainView({
             )}
           </div>
 
-          {/* Emergency Breakdown Trigger Button */}
+          {/* Emergency Breakdown Trigger / Clear Breakdown Button */}
           <button
-            className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 ${
+            className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-md ${
               isBroken
-                ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
                 : 'bg-rose-950/40 border border-rose-800 text-rose-300 hover:bg-rose-900/50'
             }`}
-            onClick={() => {
-              if (soundEnabled) playSound('alert');
-              onBreakVehicle(vehicle.id);
+            onClick={async () => {
+              if (soundEnabled) playSound(isBroken ? 'success' : 'alert');
+              if (onBreakVehicle) {
+                await onBreakVehicle(vehicle.id);
+              }
             }}
           >
             <AlertTriangle className="w-3.5 h-3.5" />
