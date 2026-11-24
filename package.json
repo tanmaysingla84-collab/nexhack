@@ -4,20 +4,25 @@
   "description": "CampusPool OS - Dynamic Campus Ride Pooling",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
     "server": "node server/index.js",
-    "start": "concurrently \"node server/index.js\" \"vite --port 3000 --host\"",
-    "build": "vite build",
-    "preview": "vite preview",
     "test": "node tests/comprehensive.test.js"
   },
   "dependencies": {
+    "autoprefixer": "^10.7.0",
+    "canvas-confetti": "^1.9.4",
     "chart.js": "^4.6.2",
     "cors": "^2.8.6",
     "express": "^5.3.0",
     "leaflet": "^1.9.4",
+    "lucide-react": "^1.79.0",
+    "next": "^16.4.6",
+    "postcss": "^8.5.33",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "tailwindcss": "^3.4.19",
     "ws": "^8.23.0"
   },
   "devDependencies": {

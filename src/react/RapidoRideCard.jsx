@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function RapidoRideCard({ nodes = [], onAddRequest, currentUser, onOpenLogin }) {
-  const [pickup, setPickup] = useState(nodes[17]?.id || 'boys_hostel_a'); // Boys Hostel default
-  const [dropoff, setDropoff] = useState(nodes[5]?.id || 'cse_block'); // CS & AI block default
+  const [pickup, setPickup] = useState('hostel_strip_south');
+  const [dropoff, setDropoff] = useState('academic_block_central');
   const [rideType, setRideType] = useState('pool'); // 'pool' | 'solo'
   const [passengers, setPassengers] = useState(1);
+
+  useEffect(() => {
+    if (nodes && nodes.length > 0) {
+      if (!nodes.some(n => n.id === pickup)) {
+        setPickup(nodes.find(n => n.id.includes('hostel'))?.id || nodes[0].id);
+      }
+      if (!nodes.some(n => n.id === dropoff)) {
+        setDropoff(nodes.find(n => n.id.includes('academic') || n.id.includes('gateway'))?.id || nodes[1]?.id || nodes[0].id);
+      }
+    }
+  }, [nodes]);
 
   const handleBookRide = (e) => {
     e.preventDefault();
@@ -23,6 +34,7 @@ export default function RapidoRideCard({ nodes = [], onAddRequest, currentUser, 
       passengers: parseInt(passengers, 10),
       windowMin: 10,
       maxDetourMin: rideType === 'pool' ? 6 : 0,
+      maxDetourFactor: rideType === 'pool' ? 1.5 : 1.0,
       riderName: currentUser.name,
       studentId: currentUser.id
     });

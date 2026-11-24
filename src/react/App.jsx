@@ -264,6 +264,12 @@ export default function App() {
     initSimulation(seed);
   };
 
+  const handleUpdateConfig = (cfg) => {
+    if (sim?.updateConfig) {
+      sim.updateConfig(cfg);
+    }
+  };
+
   const handleLoginSuccess = (user) => {
     setCurrentUser(user);
     if (user.role === 'admin') {
@@ -568,6 +574,7 @@ export default function App() {
             onTriggerBurst={handleClassBurst}
             onCancelRequest={handleCancelRequest}
             onAddCustomRequest={handleAddRequest}
+            onUpdateConfig={handleUpdateConfig}
           />
         </main>
       )}

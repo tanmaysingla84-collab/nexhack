@@ -35,9 +35,9 @@ function test(name, fn) {
 }
 
 // 1. Campus Data and Graph Tests
-test('Campus topology has 20 nodes and 31 edges, is fully connected', () => {
-  assert.strictEqual(campusData.nodes.length, 20, 'Should have 20 nodes');
-  assert.strictEqual(campusData.edges.length, 31, 'Should have 31 edges');
+test('Campus topology has 9 nodes and 12 edges, is fully connected', () => {
+  assert.strictEqual(campusData.nodes.length, 9, 'Should have 9 nodes');
+  assert.strictEqual(campusData.edges.length, 12, 'Should have 12 edges');
 
   const graph = new CampusGraph(campusData.nodes, campusData.edges);
   for (const n1 of campusData.nodes) {
@@ -129,7 +129,7 @@ test('Insertion that would break existing rider promise is rejected with clear r
   assert.strictEqual(r1.status, 'assigned');
 
   // Add conflicting rider far away that would delay r1
-  const r2 = sim.addRequest({ pickup: campusData.nodes[15].id, dropoff: campusData.nodes[16].id, windowMin: 2 });
+  const r2 = sim.addRequest({ pickup: campusData.nodes[7].id, dropoff: campusData.nodes[8].id, windowMin: 2 });
   if (r2.status === 'rejected') {
     assert.ok(r2.reasons.length > 0, 'Rejection must contain structured reasons');
     assert.ok(r2.rejectionReason, 'rejectionReason string must be populated');
@@ -174,7 +174,7 @@ test('breakVehicle sets status to broken, safely drops onboard riders, reassigns
   assert.ok(v1.onboard.includes(r1.requestId), 'Rider 1 must be onboard');
 
   // Add an unpicked request to V1
-  const r2 = sim.addRequest({ pickup: campusData.nodes[3].id, dropoff: campusData.nodes[11].id });
+  const r2 = sim.addRequest({ pickup: campusData.nodes[3].id, dropoff: campusData.nodes[5].id });
 
   // Break V1
   sim.breakVehicle(v1.id);

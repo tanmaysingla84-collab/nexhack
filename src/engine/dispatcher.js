@@ -32,9 +32,13 @@ export function calculateStopsArrivals(vehicle, candidateStops, currentTime, gra
   let currNode = vehicle.currentNode;
 
   if (vehicle.targetNode && vehicle.status === 'moving' && vehicle.progressFraction > 0) {
-    const sp = graph.getShortestPath(vehicle.currentNode, vehicle.targetNode);
-    const legMin = sp.minutes > 0 ? sp.minutes : 1;
-    currTime += legMin * Math.max(0, 1 - vehicle.progressFraction);
+    const edge = graph.edges.find(e =>
+      (e.from === vehicle.currentNode && e.to === vehicle.targetNode) ||
+      (e.to === vehicle.currentNode && e.from === vehicle.targetNode)
+    );
+    const legMin = edge ? edge.minutes : (graph.getShortestPath(vehicle.currentNode, vehicle.targetNode).minutes || 1);
+    const validLegMin = (legMin > 0 && legMin < Infinity) ? legMin : 1;
+    currTime += validLegMin * Math.max(0, 1 - vehicle.progressFraction);
     currNode = vehicle.targetNode;
   }
 
@@ -232,7 +236,8 @@ export function dispatchRequest({
         // (d) Detour Limit for New Rider
         const newDropoffArrival = arrivals[j + 1];
         const newRideTime = newDropoffArrival - newPickupArrival;
-        const maxAllowedRideTime = directMinutes * maxDetourFactor;
+        const effectiveDetourFactor = request.maxDetourFactor || maxDetourFactor;
+        const maxAllowedRideTime = directMinutes * effectiveDetourFactor;
         if (newRideTime > maxAllowedRideTime) {
           const excess = (newRideTime - maxAllowedRideTime).toFixed(1);
           if (!vehicleFirstFailure) {
@@ -275,7 +280,13 @@ export function dispatchRequest({
           if (st.type === 'dropoff') {
             const exDirect = graph.getShortestPath(exReq.pickup, exReq.dropoff).minutes;
             const exMaxRide = exDirect * (exReq.maxDetourFactor || maxDetourFactor);
-            const actualPickupTime = (exReq.pickedUpAt !== null) ? exReq.pickedUpAt : exReq.createdAt;
+            let actualPickupTime;
+            if (exReq.pickedUpAt !== null) {
+              actualPickupTime = exReq.pickedUpAt;
+            } else {
+              const pIdx = testStops.findIndex(s => s.requestId === exReq.id && s.type === 'pickup');
+              actualPickupTime = pIdx !== -1 ? arrivals[pIdx] : (exReq.createdAt ?? currentTime);
+            }
             const exRideTime = arrivalTime - actualPickupTime;
 
             if (exRideTime > exMaxRide) {

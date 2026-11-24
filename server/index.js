@@ -36,7 +36,7 @@ let speedMultiplier = 1;
 let ticker = null;
 
 // Initial requests
-activeSim.addRequest({ pickup: 'boys_hostel_a', dropoff: 'gateway_building', passengers: 1, windowMin: 10 });
+activeSim.addRequest({ pickup: 'hostel_strip_south', dropoff: 'gateway_building', passengers: 1, windowMin: 10 });
 activeSim.addRequest({ pickup: 'girls_hostel_mess', dropoff: 'student_center', passengers: 1, windowMin: 10 });
 
 function broadcastState() {

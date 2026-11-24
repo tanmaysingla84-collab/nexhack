@@ -56,8 +56,8 @@ test('Feasibility: Rejects ride with PICKUP_WINDOW_INFEASIBLE when pickup ETA ex
   const sim = createSimulation({ campus: campusData, seed: 42, vehicleCount: 1 });
   // Place request at opposite side of campus with impossible 0.1 min window
   const r = sim.addRequest({
-    pickup: campusData.nodes[15].id,
-    dropoff: campusData.nodes[16].id,
+    pickup: campusData.nodes[campusData.nodes.length - 1].id,
+    dropoff: campusData.nodes[0].id,
     windowMin: 0.1
   });
   assert.strictEqual(r.status, 'rejected');
@@ -73,7 +73,7 @@ test('Commitment Protection: Rejects insertion that would delay on-board rider p
   assert.strictEqual(r1.status, 'assigned');
 
   // Request that would require vehicle to make a massive detour across campus
-  const r2 = sim.addRequest({ pickup: campusData.nodes[14].id, dropoff: campusData.nodes[18].id, windowMin: 15 });
+  const r2 = sim.addRequest({ pickup: campusData.nodes[6].id, dropoff: campusData.nodes[8].id, windowMin: 15 });
   if (r2.status === 'rejected') {
     assert.ok(r2.reasons.some(r => r.code === 'DETOUR_LIMIT_BREACH' || r.code === 'PICKUP_WINDOW_INFEASIBLE'));
   }

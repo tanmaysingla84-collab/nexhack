@@ -35,22 +35,34 @@ export function runScenario({
   const totalTicks = Math.floor(durationMin * 6); // 1 tick = 10 sec = 1/6 min
   const requestSchedule = new Map();
 
-  // Generate realistic campus peak traffic (e.g. class dismissals at t=15 and t=40)
-  const burstTimes = [15, 40];
-  for (let m = 2; m < durationMin - 4; m += 3) {
-    const isBurst = burstTimes.includes(m);
-    const count = isBurst ? 4 : (rng() > 0.45 ? 1 : 0);
+  // Generate realistic campus peak traffic (e.g. class dismissals and routine travel)
+  const burstTimes = durationMin <= 25 ? [8, 14] : [14, 29, 44];
+  const academicHubs = nodeIds.filter(id => id.includes('academic') || id.includes('gateway') || id.includes('student'));
+  const hostelHubs = nodeIds.filter(id => id.includes('hostel') || id.includes('housing') || id.includes('stadium') || id.includes('sports'));
+
+  for (let m = 2; m < durationMin - 2; m += 3) {
+    const isBurst = burstTimes.some(b => Math.abs(m - b) < 1.6);
+    const count = isBurst ? 4 : (rng() > 0.4 ? 1 : 0);
 
     for (let c = 0; c < count; c++) {
-      const pIdx = Math.floor(rng() * nodeIds.length);
-      let dIdx = Math.floor(rng() * nodeIds.length);
-      if (dIdx === pIdx) dIdx = (pIdx + 1) % nodeIds.length;
+      let pId, dId;
+      if (isBurst && academicHubs.length > 0 && hostelHubs.length > 0) {
+        // Correlated post-class travel: academic -> hostel
+        pId = academicHubs[Math.floor(rng() * academicHubs.length)];
+        dId = hostelHubs[Math.floor(rng() * hostelHubs.length)];
+      } else {
+        const pIdx = Math.floor(rng() * nodeIds.length);
+        let dIdx = Math.floor(rng() * nodeIds.length);
+        if (dIdx === pIdx) dIdx = (pIdx + 1) % nodeIds.length;
+        pId = nodeIds[pIdx];
+        dId = nodeIds[dIdx];
+      }
 
       const tickIdx = Math.floor(m * 6);
       if (!requestSchedule.has(tickIdx)) requestSchedule.set(tickIdx, []);
       requestSchedule.get(tickIdx).push({
-        pickup: nodeIds[pIdx],
-        dropoff: nodeIds[dIdx],
+        pickup: pId,
+        dropoff: dId,
         passengers: 1,
         windowMin: 10,
         maxDetourFactor

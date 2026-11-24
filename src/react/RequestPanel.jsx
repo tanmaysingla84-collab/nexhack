@@ -93,7 +93,14 @@ export default function RequestPanel({ requests = [], nodes = [], onCancel }) {
                   <div className="rejection-accordion">
                     <div className="rejection-primary" onClick={() => toggleRejection(req.id)}>
                       <span>⚠️</span>
-                      <span><strong>Primary Reason:</strong> {primaryReason}</span>
+                      <div style={{ flex: 1 }}>
+                        <div><strong>Constraint Reason:</strong> {primaryReason}</div>
+                        {req.code && (
+                          <span className="status-chip rejected" style={{ fontSize: '0.65rem', padding: '1px 6px', marginTop: '2px', display: 'inline-block' }}>
+                            {req.code}
+                          </span>
+                        )}
+                      </div>
                       <span className="rejection-toggle-hint">
                         {isExpanded ? '▲ Hide breakdown' : '▼ View per-vehicle breakdown'}
                       </span>
@@ -101,6 +108,11 @@ export default function RequestPanel({ requests = [], nodes = [], onCancel }) {
 
                     {isExpanded && (
                       <div className="rejection-details">
+                        {req.bestNearMiss && (
+                          <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.35)', borderRadius: '6px', padding: '0.45rem 0.65rem', marginBottom: '0.5rem', fontSize: '0.75rem', color: '#fca5a5' }}>
+                            🎯 <strong>Nearest Candidate Near-Miss:</strong> {req.bestNearMiss}
+                          </div>
+                        )}
                         <div style={{ fontWeight: 600, color: '#fca5a5', marginBottom: '2px' }}>
                           Evaluated Vehicle Constraints:
                         </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function ControlPanel({
   nodes = [],
@@ -10,15 +10,35 @@ export default function ControlPanel({
   onClassBurst,
   onReset
 }) {
-  const [pickup, setPickup] = useState(nodes[0]?.id || 'hostel_a');
-  const [dropoff, setDropoff] = useState(nodes[3]?.id || 'library');
+  const [pickup, setPickup] = useState('hostel_strip_south');
+  const [dropoff, setDropoff] = useState('academic_block_central');
   const [passengers, setPassengers] = useState(1);
   const [windowMin, setWindowMin] = useState(10);
   const [detourMin, setDetourMin] = useState(6);
+  const [detourFactor, setDetourFactor] = useState(1.5);
 
-  const [selectedEdge, setSelectedEdge] = useState(edges[0]?.id || 'e1');
-  const [selectedVehicle, setSelectedVehicle] = useState(vehicles[0]?.id || 'V1');
+  const [selectedEdge, setSelectedEdge] = useState('e1');
+  const [selectedVehicle, setSelectedVehicle] = useState('V1');
   const [seed, setSeed] = useState(42);
+
+  useEffect(() => {
+    if (nodes && nodes.length > 0) {
+      if (!nodes.some(n => n.id === pickup)) setPickup(nodes[0].id);
+      if (!nodes.some(n => n.id === dropoff)) setDropoff(nodes[1]?.id || nodes[0].id);
+    }
+  }, [nodes]);
+
+  useEffect(() => {
+    if (edges && edges.length > 0 && !edges.some(e => e.id === selectedEdge)) {
+      setSelectedEdge(edges[0].id);
+    }
+  }, [edges]);
+
+  useEffect(() => {
+    if (vehicles && vehicles.length > 0 && !vehicles.some(v => v.id === selectedVehicle)) {
+      setSelectedVehicle(vehicles[0].id);
+    }
+  }, [vehicles]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -31,7 +51,8 @@ export default function ControlPanel({
       dropoff,
       passengers: parseInt(passengers, 10),
       windowMin: parseFloat(windowMin),
-      maxDetourMin: parseFloat(detourMin)
+      maxDetourMin: parseFloat(detourMin),
+      maxDetourFactor: parseFloat(detourFactor)
     });
   };
 
@@ -41,7 +62,8 @@ export default function ControlPanel({
       dropoff: d,
       passengers: pass,
       windowMin: 10,
-      maxDetourMin: 6
+      maxDetourMin: 6,
+      maxDetourFactor: 1.5
     });
   };
 

@@ -79,6 +79,27 @@ export default function ProblemSolutionModal({ isOpen, onClose }) {
                 Headless comparison engine evaluating Dynamic Pooling against Solo rides under identical seeded traffic for fleet distance, average wait, $p95$ wait, missed pickups, and seat utilization.
               </p>
             </div>
+
+            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '10px', border: '1px solid #e2e8f0', gridColumn: 'span 2' }}>
+              <div style={{ fontWeight: 800, color: '#012e55', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span>7️⃣</span> Demonstrate Active Disruptions (Cancellation & Road Closure)
+              </div>
+              <p style={{ color: '#475569', fontSize: '0.8rem' }}>
+                Interactive live demonstration: rider cancellation immediately prunes active stops and updates ETAs; real-time road closure triggers on-the-fly Dijkstra recomputation and live detour around blocked segments while shuttles are in motion.
+              </p>
+            </div>
+          </div>
+
+          {/* Expected Impact Callout */}
+          <div style={{ background: 'rgba(1, 46, 85, 0.05)', border: '1px solid rgba(1, 46, 85, 0.15)', borderRadius: '10px', padding: '0.85rem 1.1rem', marginBottom: '1.25rem' }}>
+            <div style={{ fontWeight: 800, color: '#012e55', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+              🎯 Expected Impact & Operational Value
+            </div>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', color: '#334155', fontSize: '0.78rem', lineHeight: '1.5' }}>
+              <li><strong>Efficiency:</strong> Maximize campus shuttle capacity usage during high-demand class dismissal bursts.</li>
+              <li><strong>Transparency:</strong> Expose trade-offs between shared pooling detours, waiting times, and total campus coverage.</li>
+              <li><strong>Reliability:</strong> Provide passengers and dispatchers instant, crystal-clear explanations when road closures or cancellations alter trips.</li>
+            </ul>
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '1rem' }}>

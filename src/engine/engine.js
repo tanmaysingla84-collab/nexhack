@@ -28,11 +28,20 @@ export function createSimulation({
   seed = 42,
   mode = 'pool',
   vehicleCount = 3,
-  capacity = 4
+  capacity = 4,
+  maxDetourFactor = 1.5,
+  windowMin = 10
 } = {}) {
   if (!campus || !campus.nodes || !campus.edges) {
     throw new Error('Campus topology with nodes and edges must be provided.');
   }
+
+  const config = {
+    mode,
+    maxDetourFactor,
+    windowMin,
+    capacity
+  };
 
   const rng = createRNG(seed);
   const clonedNodes = JSON.parse(JSON.stringify(campus.nodes));
@@ -54,7 +63,7 @@ export function createSimulation({
   }
 
   // Initial vehicles placed at key hubs (dynamically resolving valid campus node ids)
-  const defaultHubIds = ['main_gate', 'central_library', 'library', 'sports_complex', 'cse_block', 'tech_tower', 'boys_hostel_a', 'hostel_b', 'central_cafeteria', 'canteen_central'];
+  const defaultHubIds = ['main_entrance', 'academic_complex', 'boys_hostel', 'gateway_building', 'sports_complex', 'student_center'];
   const validHubIds = defaultHubIds.filter(id => clonedNodes.some(n => n.id === id));
   const hubNodeIds = validHubIds.length > 0 ? validHubIds : clonedNodes.map(n => n.id);
 
@@ -134,8 +143,11 @@ export function createSimulation({
     pickup,
     dropoff,
     passengers = 1,
-    windowMin = 10,
-    maxDetourMin = 6
+    windowMin = config.windowMin || 10,
+    maxDetourMin = 6,
+    maxDetourFactor = config.maxDetourFactor || 1.5,
+    riderName,
+    studentId
   }) {
     const requestId = `R${requestSeq++}`;
     const directPath = graph.getShortestPath(pickup, dropoff);
@@ -145,7 +157,7 @@ export function createSimulation({
     const latestPickup = time + windowMin;
     // Guaranteed promise: direct travel + window + allowed detour
     const promisedLatestDropoff = (directMinutes < Infinity)
-      ? (time + windowMin + directMinutes + maxDetourMin)
+      ? (time + windowMin + directMinutes * maxDetourFactor)
       : null;
 
     const reqObj = {
@@ -155,6 +167,9 @@ export function createSimulation({
       passengers,
       windowMin,
       maxDetourMin,
+      maxDetourFactor,
+      riderName: riderName || `Student ${requestId}`,
+      studentId: studentId || null,
       earliestPickup,
       latestPickup,
       status: 'waiting',
@@ -173,7 +188,8 @@ export function createSimulation({
       requests,
       currentTime: time,
       graph,
-      mode
+      mode: config.mode,
+      maxDetourFactor
     });
 
     if (!dispatchResult.success) {
@@ -355,7 +371,32 @@ export function createSimulation({
             v.stops = v.stops.filter(s => s.requestId !== req.id);
             req.status = 'waiting';
             req.vehicleId = null;
-            logEvent('disruption', `Request ${req.id} unassigned from ${v.id} due to impassable closure.`, { requestId: req.id });
+            logEvent('disruption', `Request ${req.id} unassigned from ${v.id} due to impassable closure. Re-evaluating dispatch...`, { requestId: req.id });
+
+            const redispatch = dispatchRequest({
+              request: req,
+              vehicles,
+              requests,
+              currentTime: time,
+              graph,
+              mode: config.mode,
+              maxDetourFactor: req.maxDetourFactor || config.maxDetourFactor
+            });
+
+            if (redispatch.success) {
+              const newV = vehicles.find(veh => veh.id === redispatch.vehicleId);
+              newV.stops = redispatch.stops;
+              updateVehicleRoute(newV);
+              req.status = 'assigned';
+              req.vehicleId = newV.id;
+              logEvent('assignment', `Request ${req.id} re-assigned to ${newV.id} after road closure.`, { requestId: req.id, vehicleId: newV.id });
+            } else {
+              req.status = 'rejected';
+              req.code = 'NO_ROUTE_AVAILABLE';
+              req.rejectionReason = `Cannot reroute around road closure: ${redispatch.rejectionReason}`;
+              req.reasons = redispatch.reasons;
+              logEvent('rejection', `Request ${req.id} rejected after road closure: ${req.rejectionReason}`, { requestId: req.id, reasons: req.reasons });
+            }
           }
         }
         updateVehicleRoute(v);
@@ -534,12 +575,16 @@ export function createSimulation({
         status: v.status,
         position: { ...v.position },
         currentNode: v.currentNode,
+        targetNode: v.targetNode,
+        progressFraction: v.progressFraction,
         route: [...v.route],
         stops: v.stops.map(s => ({ ...s })),
         onboard: [...v.onboard],
-        color: v.color
+        color: v.color,
+        totalDistanceMin: parseFloat((v.totalDistanceMin || 0).toFixed(1))
       })),
       requests: requests.map(r => ({ ...r, reasons: r.reasons ? [...r.reasons] : [] })),
+      config: { ...config },
       metrics: {
         totalRequests: requests.length,
         completedCount: completed.length,
@@ -573,6 +618,13 @@ export function createSimulation({
     reopenRoad,
     getState,
     getEvents,
-    subscribe
+    subscribe,
+    updateConfig(newConfig) {
+      if (newConfig.maxDetourFactor !== undefined) config.maxDetourFactor = parseFloat(newConfig.maxDetourFactor);
+      if (newConfig.windowMin !== undefined) config.windowMin = parseFloat(newConfig.windowMin);
+      if (newConfig.mode !== undefined) config.mode = newConfig.mode;
+      logEvent('config', `Simulation parameters updated: maxDetourFactor=${config.maxDetourFactor}, windowMin=${config.windowMin}`);
+      notify();
+    }
   };
 }
