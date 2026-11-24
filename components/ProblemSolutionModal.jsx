@@ -33,7 +33,7 @@ export default function ProblemSolutionModal({ isOpen, onClose }) {
                 <span>Match Requests Dynamically</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed">
-                Evaluates every insertion permutation across active shuttles with lowest marginal cost ($ \Delta\text{dist} + 0.5 \times \Delta\text{wait} $). Groups concurrent class-break riders into shared trips within capacity and promised pickup windows.
+                Evaluates every insertion permutation across active shuttles with lowest marginal cost (&Delta;dist + 0.5 &times; &Delta;wait). Groups concurrent class-break riders into shared trips within capacity and promised pickup windows.
               </p>
             </div>
 
@@ -43,7 +43,7 @@ export default function ProblemSolutionModal({ isOpen, onClose }) {
                 <span>Protect Existing Commitments</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed">
-                Mathematical invariant: for every onboard and queued rider, $ \text{rideTime} \le \text{directTime} \times 1.5 $. Onboard passengers are never dropped or delayed past their detour bound.
+                Mathematical invariant: for every onboard and queued rider, rideTime &le; directTime &times; 1.5. Onboard passengers are never dropped or delayed past their detour bound.
               </p>
             </div>
 

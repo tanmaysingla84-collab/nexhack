@@ -29,7 +29,7 @@ export default function ProblemSolutionModal({ isOpen, onClose }) {
                 <span>1️⃣</span> Match Requests Dynamically
               </div>
               <p style={{ color: '#475569', fontSize: '0.8rem' }}>
-                Employs greedy insertion with marginal cost minimization ($ \Delta \text{dist} + 0.5 \times \Delta \text{wait} $). Tests all stop index permutations across active shuttles to group concurrent class dismissal rides into shared trips.
+                Employs greedy insertion with marginal cost minimization (&Delta;dist + 0.5 &times; &Delta;wait). Tests all stop index permutations across active shuttles to group concurrent class dismissal rides into shared trips.
               </p>
             </div>
 
@@ -38,7 +38,7 @@ export default function ProblemSolutionModal({ isOpen, onClose }) {
                 <span>2️⃣</span> Protect Existing Commitments
               </div>
               <p style={{ color: '#475569', fontSize: '0.8rem' }}>
-                Rigorous mathematical invariant: for every onboard or assigned student, $ \text{rideTime} \le \text{directTime} \times 1.5 $. Onboard passengers are never dropped or subjected to detours past their bound.
+                Rigorous mathematical invariant: for every onboard or assigned student, rideTime &le; directTime &times; 1.5. Onboard passengers are never dropped or subjected to detours past their bound.
               </p>
             </div>
 

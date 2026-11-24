@@ -197,7 +197,7 @@ export default function ComparisonModal({ isOpen, onClose, seed = 42, campus }) 
                   📝 Algorithmic Evaluation & Operational Trade-Offs (Seed: {results.seed})
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  <strong>Service Coverage:</strong> Dynamic Pooling served <strong>{results.pool.servedPct}%</strong> of campus ride demand compared to only <strong>{results.solo.servedPct}%</strong> under solo direct service. During peak class dismissals, solo direct service exhausts vehicle inventory, causing <strong>{results.solo.missedPickups} stranded riders</strong> due to expired pickup windows. Dynamic Pooling grouped concurrent trips, boosting seat utilization to <strong>{results.pool.seatUtilPct}%</strong> while enforcing detour limits ($ \text{rideTime} \le \text{directTime} \times 1.5 $).
+                  <strong>Service Coverage:</strong> Dynamic Pooling served <strong>{results.pool.servedPct}%</strong> of campus ride demand compared to only <strong>{results.solo.servedPct}%</strong> under solo direct service. During peak class dismissals, solo direct service exhausts vehicle inventory, causing <strong>{results.solo.missedPickups} stranded riders</strong> due to expired pickup windows. Dynamic Pooling grouped concurrent trips, boosting seat utilization to <strong>{results.pool.seatUtilPct}%</strong> while enforcing detour limits (ride time &le; direct time &times; 1.5).
                 </p>
               </div>
             </>
