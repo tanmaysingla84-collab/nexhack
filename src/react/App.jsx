@@ -308,7 +308,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Role-Based Navigation: Only Admins can see the Admin Command Portal */}
+        {/* Role-Based Navigation: Only Admins who logged in can toggle Admin Command Portal */}
         {currentUser?.role === 'admin' && (
           <div className="header-nav-pills">
             <button
@@ -326,42 +326,47 @@ export default function App() {
           </div>
         )}
 
-        {/* Simulation Controls & Student Login */}
+        {/* Student Header Controls & Secure Profile Hub */}
         <div className="header-controls">
           <div className="time-display-pill">
             <span>⏱ t = {simState ? simState.time : '0.0'} min</span>
           </div>
 
-          <div className="btn-group">
-            <button
-              className="btn-sm"
-              title="Toggle Play / Pause"
-              onClick={() => setIsPlaying(!isPlaying)}
-            >
-              <span>{isPlaying ? '⏸' : '▶'}</span> {isPlaying ? 'Pause' : 'Play'}
-            </button>
-            <button
-              className="btn-sm"
-              title="Advance by 1 tick (10s)"
-              onClick={() => {
-                if (sim) sim.tick();
-              }}
-            >
-              ⏭ Step
-            </button>
-          </div>
+          {/* Admin-only Simulation Control Buttons */}
+          {currentUser?.role === 'admin' && (
+            <>
+              <div className="btn-group">
+                <button
+                  className="btn-sm"
+                  title="Toggle Play / Pause"
+                  onClick={() => setIsPlaying(!isPlaying)}
+                >
+                  <span>{isPlaying ? '⏸' : '▶'}</span> {isPlaying ? 'Pause' : 'Play'}
+                </button>
+                <button
+                  className="btn-sm"
+                  title="Advance by 1 tick (10s)"
+                  onClick={() => {
+                    if (sim) sim.tick();
+                  }}
+                >
+                  ⏭ Step
+                </button>
+              </div>
 
-          <div className="btn-group">
-            {[1, 5, 20].map(s => (
-              <button
-                key={s}
-                className={`btn-sm btn-speed ${speedMultiplier === s ? 'active' : ''}`}
-                onClick={() => setSpeedMultiplier(s)}
-              >
-                {s}x
-              </button>
-            ))}
-          </div>
+              <div className="btn-group">
+                {[1, 5, 20].map(s => (
+                  <button
+                    key={s}
+                    className={`btn-sm btn-speed ${speedMultiplier === s ? 'active' : ''}`}
+                    onClick={() => setSpeedMultiplier(s)}
+                  >
+                    {s}x
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           <button
             className="btn-secondary btn-sm"
@@ -410,13 +415,16 @@ export default function App() {
             </button>
           )}
 
-          <button
-            className="btn-primary"
-            title="Launch 7-Step Scripted Presentation Demo"
-            onClick={startDemo}
-          >
-            ✨ Run Demo
-          </button>
+          {/* 7-Step Scripted Demo: Only available to Admin */}
+          {currentUser?.role === 'admin' && (
+            <button
+              className="btn-primary"
+              title="Launch 7-Step Scripted Presentation Demo"
+              onClick={startDemo}
+            >
+              ✨ Run Demo
+            </button>
+          )}
         </div>
       </header>
 
@@ -522,12 +530,14 @@ export default function App() {
                 <span>📋 Active Rides</span>
                 <span className="tab-badge">{simState?.requests?.length || 0}</span>
               </button>
-              <button
-                className={`tab-btn ${activeTab === 'controls' ? 'active' : ''}`}
-                onClick={() => setActiveTab('controls')}
-              >
-                <span>🎛️ Advanced Controls</span>
-              </button>
+              {currentUser?.role === 'admin' && (
+                <button
+                  className={`tab-btn ${activeTab === 'controls' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('controls')}
+                >
+                  <span>🎛️ Advanced Controls</span>
+                </button>
+              )}
               <button
                 className={`tab-btn ${activeTab === 'events' ? 'active' : ''}`}
                 onClick={() => setActiveTab('events')}

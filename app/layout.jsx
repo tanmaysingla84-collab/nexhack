@@ -16,6 +16,7 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
           rel="stylesheet"
         />
+        <link rel="stylesheet" href="/leaflet.css" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
       </head>
       <body className="bg-slate-950 text-slate-100 min-h-screen antialiased">
