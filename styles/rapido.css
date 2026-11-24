@@ -1,0 +1,387 @@
+
+
+/* Rapido-Style Ride Booking Card */
+.rapido-ride-card {
+  padding: 0.85rem;
+  background: #ffffff;
+  border-bottom: 2px solid var(--gu-border);
+}
+
+.rapido-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.65rem;
+}
+
+.rapido-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--gu-orange);
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.rapido-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--gu-blue);
+}
+
+.user-badge-mini {
+  background: var(--gu-surface-subtle);
+  border: 1px solid var(--gu-border);
+  padding: 0.25rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gu-blue);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s;
+}
+
+.user-badge-mini:hover {
+  border-color: var(--gu-orange);
+  background: #fff8f5;
+}
+
+.rapido-ride-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.rapido-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--gu-surface-subtle);
+  border: 1px solid var(--gu-border);
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  transition: border-color 0.15s;
+}
+
+.rapido-input-group:focus-within {
+  border-color: var(--gu-orange);
+  background: #fff;
+}
+
+.loc-icon-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.loc-icon-dot.green {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.loc-icon-dot.orange {
+  background: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+.rapido-input-label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--gu-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.rapido-select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gu-blue);
+  outline: none;
+  cursor: pointer;
+}
+
+.rapido-route-divider {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 16px;
+  margin: 2px 0 2px 14px;
+}
+
+.divider-line {
+  width: 2px;
+  height: 100%;
+  background: #cbd5e1;
+}
+
+.swap-btn {
+  position: absolute;
+  right: 12px;
+  background: #ffffff;
+  border: 1px solid var(--gu-border);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--gu-blue);
+  transition: all 0.15s;
+}
+
+.swap-btn:hover {
+  background: var(--gu-surface-subtle);
+  border-color: var(--gu-orange);
+  color: var(--gu-orange);
+}
+
+/* Rapido Tier Selector */
+.rapido-tier-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.rapido-tier-option {
+  border: 1.5px solid var(--gu-border);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: var(--gu-surface-subtle);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rapido-tier-option:hover {
+  border-color: var(--gu-orange);
+  transform: translateY(-1px);
+}
+
+.rapido-tier-option.active {
+  border-color: var(--gu-orange);
+  background: #fff8f5;
+  box-shadow: 0 0 0 2px rgba(225, 107, 31, 0.3);
+}
+
+.tier-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.tier-icon {
+  font-size: 1.1rem;
+}
+
+.tier-badge-save {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.tier-badge-fast {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.tier-name {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--gu-blue);
+}
+
+.tier-sub {
+  font-size: 0.65rem;
+  color: var(--gu-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.tier-price {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--gu-orange);
+}
+
+.passenger-pill-selector {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.pass-pill {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid var(--gu-border);
+  background: var(--gu-surface-subtle);
+  color: var(--gu-text-muted);
+  cursor: pointer;
+}
+
+.pass-pill.active {
+  background: var(--gu-blue);
+  color: #fff;
+  border-color: var(--gu-blue);
+}
+
+.rapido-book-btn {
+  width: 100%;
+  padding: 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  justify-content: center;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(225, 107, 31, 0.3);
+}
+
+/* Rapido Login Modal Styles */
+.rapido-login-window {
+  max-width: 480px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.rapido-header {
+  background: var(--gu-blue);
+  color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 3px solid var(--gu-orange);
+}
+
+.rapido-badge {
+  background: var(--gu-orange);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 0.35rem;
+}
+
+.rapido-header h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.rapido-header p {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.rapido-toggle-tabs {
+  display: flex;
+  background: var(--gu-surface-subtle);
+  border: 1px solid var(--gu-border);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 1.25rem;
+}
+
+.rapido-tab {
+  flex: 1;
+  padding: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: var(--gu-text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rapido-tab.active {
+  background: #ffffff;
+  color: var(--gu-blue);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.country-code {
+  background: var(--gu-surface-subtle);
+  border: 1px solid var(--gu-border);
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--gu-blue);
+}
+
+.logged-in-profile-box {
+  background: #ffffff;
+}
+
+.profile-top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-avatar {
+  font-size: 2.5rem;
+  background: var(--gu-surface-subtle);
+  border: 2px solid var(--gu-border);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-roll {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--gu-orange);
+  font-size: 0.85rem;
+}
+
+.profile-dept {
+  font-size: 0.75rem;
+  color: var(--gu-text-muted);
+}
+
+.rapido-wallet-card {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rapido-tier-badge {
+  background: #15803d;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 9999px;
+}
