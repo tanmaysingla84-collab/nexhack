@@ -53,8 +53,11 @@ export function createSimulation({
     });
   }
 
-  // Initial vehicles placed at key hubs
-  const hubNodeIds = ['main_gate', 'library', 'sports_complex', 'tech_tower', 'hostel_b', 'canteen_central'];
+  // Initial vehicles placed at key hubs (dynamically resolving valid campus node ids)
+  const defaultHubIds = ['main_gate', 'central_library', 'library', 'sports_complex', 'cse_block', 'tech_tower', 'boys_hostel_a', 'hostel_b', 'central_cafeteria', 'canteen_central'];
+  const validHubIds = defaultHubIds.filter(id => clonedNodes.some(n => n.id === id));
+  const hubNodeIds = validHubIds.length > 0 ? validHubIds : clonedNodes.map(n => n.id);
+
   const vehicles = [];
   for (let i = 0; i < vehicleCount; i++) {
     const startNodeId = hubNodeIds[i % hubNodeIds.length] || clonedNodes[0].id;
@@ -175,21 +178,26 @@ export function createSimulation({
 
     if (!dispatchResult.success) {
       reqObj.status = 'rejected';
+      reqObj.code = dispatchResult.code || 'CAPACITY_EXCEEDED';
       reqObj.rejectionReason = dispatchResult.rejectionReason || 'No feasible shuttle slot found';
       reqObj.reasons = dispatchResult.reasons;
+      reqObj.bestNearMiss = dispatchResult.bestNearMiss;
       requests.push(reqObj);
 
       logEvent('rejection', `Request ${requestId} (${pickup} -> ${dropoff}) rejected: ${reqObj.rejectionReason}`, {
         requestId,
+        code: reqObj.code,
         reasons: reqObj.reasons
       });
       notify();
       return {
         requestId,
         status: 'rejected',
+        code: reqObj.code,
         vehicleId: null,
         rejectionReason: reqObj.rejectionReason,
-        reasons: reqObj.reasons
+        reasons: reqObj.reasons,
+        bestNearMiss: reqObj.bestNearMiss
       };
     }
 

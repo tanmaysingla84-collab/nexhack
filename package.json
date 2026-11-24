@@ -1,0 +1,28 @@
+{
+  "name": "nexhack",
+  "version": "1.0.0",
+  "description": "CampusPool OS - Dynamic Campus Ride Pooling",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "server": "node server/index.js",
+    "start": "concurrently \"node server/index.js\" \"vite --port 3000 --host\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/comprehensive.test.js"
+  },
+  "dependencies": {
+    "chart.js": "^4.6.2",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "leaflet": "^1.9.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "ws": "^8.23.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.3.0",
+    "concurrently": "^10.0.7",
+    "vite": "^8.3.8"
+  }
+}

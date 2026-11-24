@@ -76,7 +76,9 @@ test('Determinism: same seed produces identical random sequences and simulation 
 // 3. Pickup-before-Dropoff and Insertion Correctness
 test('Pickup-before-dropoff invariant is preserved in stops sequence', () => {
   const sim = createSimulation({ campus: campusData, seed: 42, vehicleCount: 1 });
-  const res = sim.addRequest({ pickup: 'library', dropoff: 'canteen_central' });
+  const pNode = campusData.nodes[0].id;
+  const dNode = campusData.nodes[1].id;
+  const res = sim.addRequest({ pickup: pNode, dropoff: dNode });
   assert.strictEqual(res.status, 'assigned');
 
   const state = sim.getState();
@@ -92,8 +94,11 @@ test('Pickup-before-dropoff invariant is preserved in stops sequence', () => {
 // 4. Pooling two compatible rides into the same shuttle
 test('Pools multiple riders into a single vehicle when routes align', () => {
   const sim = createSimulation({ campus: campusData, seed: 42, vehicleCount: 1, capacity: 4 });
-  const r1 = sim.addRequest({ pickup: 'main_gate', dropoff: 'tech_tower' });
-  const r2 = sim.addRequest({ pickup: 'main_gate', dropoff: 'library' });
+  const pNode = campusData.nodes[0].id;
+  const dNode1 = campusData.nodes[1].id;
+  const dNode2 = campusData.nodes[3].id;
+  const r1 = sim.addRequest({ pickup: pNode, dropoff: dNode1 });
+  const r2 = sim.addRequest({ pickup: pNode, dropoff: dNode2 });
 
   assert.strictEqual(r1.status, 'assigned');
   assert.strictEqual(r2.status, 'assigned');
@@ -106,14 +111,12 @@ test('Pools multiple riders into a single vehicle when routes align', () => {
 test('Rejects request if vehicle capacity would be exceeded', () => {
   // 1 vehicle with capacity 1
   const sim = createSimulation({ campus: campusData, seed: 42, vehicleCount: 1, capacity: 1 });
-  const r1 = sim.addRequest({ pickup: 'main_gate', dropoff: 'tech_tower' });
+  const pNode = campusData.nodes[0].id;
+  const dNode = campusData.nodes[1].id;
+  const r1 = sim.addRequest({ pickup: pNode, dropoff: dNode });
   assert.strictEqual(r1.status, 'assigned');
 
-  // Second request overlapping cannot be accommodated due to capacity 1
-  const r2 = sim.addRequest({ pickup: 'main_gate', dropoff: 'library', passengers: 1 });
-  // If r2 is inserted while r1 is onboard, capacity = 2 > 1.
-  // Dispatcher must either reject or schedule sequentially if timing permits; let's test strict passenger count > capacity:
-  const r3 = sim.addRequest({ pickup: 'library', dropoff: 'main_gate', passengers: 2 });
+  const r3 = sim.addRequest({ pickup: dNode, dropoff: pNode, passengers: 2 });
   assert.strictEqual(r3.status, 'rejected', 'Must reject passengers exceeding capacity');
   assert.ok(r3.reasons.some(r => r.type === 'capacity'), 'Should report capacity rejection reason');
 });
@@ -122,12 +125,11 @@ test('Rejects request if vehicle capacity would be exceeded', () => {
 test('Insertion that would break existing rider promise is rejected with clear reason', () => {
   const sim = createSimulation({ campus: campusData, seed: 42, vehicleCount: 1 });
   // Add first rider with tight window
-  const r1 = sim.addRequest({ pickup: 'main_gate', dropoff: 'admin_block', windowMin: 2, maxDetourMin: 1 });
+  const r1 = sim.addRequest({ pickup: campusData.nodes[0].id, dropoff: campusData.nodes[3].id, windowMin: 2, maxDetourMin: 1 });
   assert.strictEqual(r1.status, 'assigned');
 
   // Add conflicting rider far away that would delay r1
-  const r2 = sim.addRequest({ pickup: 'sports_complex', dropoff: 'swimming_pool', windowMin: 2 });
-  // Because vehicle is at main_gate, reaching sports_complex first would violate r1's pickup promise
+  const r2 = sim.addRequest({ pickup: campusData.nodes[15].id, dropoff: campusData.nodes[16].id, windowMin: 2 });
   if (r2.status === 'rejected') {
     assert.ok(r2.reasons.length > 0, 'Rejection must contain structured reasons');
     assert.ok(r2.rejectionReason, 'rejectionReason string must be populated');
@@ -137,7 +139,7 @@ test('Insertion that would break existing rider promise is rejected with clear r
 // 7. Cancellation Lifecycle
 test('cancelRequest removes stops for waiting/assigned request, rejects onboard cancellation', () => {
   const sim = createSimulation({ campus: campusData, seed: 42, vehicleCount: 1 });
-  const r1 = sim.addRequest({ pickup: 'main_gate', dropoff: 'tech_tower' });
+  const r1 = sim.addRequest({ pickup: campusData.nodes[0].id, dropoff: campusData.nodes[3].id });
   assert.strictEqual(r1.status, 'assigned');
 
   // Cancel while assigned
@@ -150,8 +152,8 @@ test('cancelRequest removes stops for waiting/assigned request, rejects onboard 
   assert.strictEqual(state1.vehicles[0].stops.length, 0, 'Vehicle stops must be empty after cancellation');
 
   // Add another request, board the vehicle, then attempt cancel
-  const r2 = sim.addRequest({ pickup: 'main_gate', dropoff: 'admin_block' });
-  sim.run(1); // At main_gate, boards immediately
+  const r2 = sim.addRequest({ pickup: campusData.nodes[0].id, dropoff: campusData.nodes[3].id });
+  sim.run(1); // At first node, boards immediately
   const state2 = sim.getState();
   const req2Obj = state2.requests.find(r => r.id === r2.requestId);
   assert.strictEqual(req2Obj.status, 'onboard');
@@ -164,7 +166,7 @@ test('cancelRequest removes stops for waiting/assigned request, rejects onboard 
 // 8. Disruption: Vehicle Breakdown
 test('breakVehicle sets status to broken, safely drops onboard riders, reassigns unpicked stops', () => {
   const sim = createSimulation({ campus: campusData, seed: 42, vehicleCount: 2 });
-  const r1 = sim.addRequest({ pickup: 'main_gate', dropoff: 'admin_block' });
+  const r1 = sim.addRequest({ pickup: campusData.nodes[0].id, dropoff: campusData.nodes[3].id });
   sim.run(1); // Board V1
 
   const state1 = sim.getState();
@@ -172,7 +174,7 @@ test('breakVehicle sets status to broken, safely drops onboard riders, reassigns
   assert.ok(v1.onboard.includes(r1.requestId), 'Rider 1 must be onboard');
 
   // Add an unpicked request to V1
-  const r2 = sim.addRequest({ pickup: 'admin_block', dropoff: 'auditorium' });
+  const r2 = sim.addRequest({ pickup: campusData.nodes[3].id, dropoff: campusData.nodes[11].id });
 
   // Break V1
   sim.breakVehicle(v1.id);
@@ -195,23 +197,23 @@ test('breakVehicle sets status to broken, safely drops onboard riders, reassigns
 // 9. Disruption: Road Closure and Rerouting
 test('closeRoad updates graph, reroutes vehicle or re-pools unservable stops, reopenRoad restores', () => {
   const sim = createSimulation({ campus: campusData, seed: 42, vehicleCount: 1 });
-  const r1 = sim.addRequest({ pickup: 'main_gate', dropoff: 'library' });
+  const r1 = sim.addRequest({ pickup: campusData.nodes[0].id, dropoff: campusData.nodes[3].id });
   assert.strictEqual(r1.status, 'assigned');
 
-  // Close direct road e2 (main_gate <-> library)
-  sim.closeRoad('e2');
+  // Close road e1
+  sim.closeRoad('e1');
 
   const state = sim.getState();
-  const edge = state.edges.find(e => e.id === 'e2');
+  const edge = state.edges.find(e => e.id === 'e1');
   assert.strictEqual(edge.closed, true);
 
-  // Vehicle should reroute via alternate path (e.g., via admin_block or hostel_a)
+  // Vehicle should reroute via alternate path
   assert.ok(state.vehicles[0].stops.length > 0, 'Stops should still be planned via alternate route');
 
   // Reopen road
-  sim.reopenRoad('e2');
+  sim.reopenRoad('e1');
   const stateAfterOpen = sim.getState();
-  const reopenedEdge = stateAfterOpen.edges.find(e => e.id === 'e2');
+  const reopenedEdge = stateAfterOpen.edges.find(e => e.id === 'e1');
   assert.strictEqual(reopenedEdge.closed, false);
 });
 

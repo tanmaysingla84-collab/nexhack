@@ -1,30 +1,40 @@
 /**
  * /src/engine/dispatcher.js
- * Greedy insertion heuristic dispatcher with strict constraint validation.
- * Supports pooled vs solo mode, capacity tracking, pickup windows, detour limits,
- * existing passenger guarantees, and detailed structured rejection reasons.
+ * Enhanced Greedy Insertion Heuristic with Rigorous Constraint Validation.
+ * 
+ * Feasibility Invariants:
+ *  (a) Seat load never exceeds vehicle capacity at any stop along the candidate route.
+ *  (b) New rider's pickup arrival is within promised window [earliestPickup, latestPickup].
+ *  (c) Existing commitments: For EVERY existing passenger (onboard or queued),
+ *      - pickup arrival <= latestPickup window
+ *      - dropoff arrival <= maxRideTimeLimit (directTime * maxDetourFactor)
+ *      - onboard passengers are NEVER dropped unplanned.
+ *  (d) Route uses only open, reachable roads.
+ * 
+ * Rejection Codes:
+ *  - CAPACITY_EXCEEDED
+ *  - PICKUP_WINDOW_INFEASIBLE
+ *  - DETOUR_LIMIT_BREACH
+ *  - NO_ROUTE_AVAILABLE
+ *  - NO_VEHICLE_AVAILABLE
  */
 
 /**
- * Calculates planned stop arrivals for a vehicle given current time and candidate stops.
- * Takes into account whether the vehicle is currently mid-transit between currentNode and targetNode.
- * 
+ * Calculates planned arrival times at each candidate stop.
  * @param {import('./models.js').Vehicle} vehicle
  * @param {import('./models.js').Stop[]} candidateStops
  * @param {number} currentTime
  * @param {import('./graph.js').CampusGraph} graph
- * @returns {number[]|null} Array of planned arrival times at each candidate stop, or null if unreachable
+ * @returns {number[]|null} Planned arrival minutes or null if unreachable
  */
 export function calculateStopsArrivals(vehicle, candidateStops, currentTime, graph) {
   let currTime = currentTime;
   let currNode = vehicle.currentNode;
 
-  // If vehicle is moving towards a targetNode, account for remaining time to reach targetNode
   if (vehicle.targetNode && vehicle.status === 'moving' && vehicle.progressFraction > 0) {
     const sp = graph.getShortestPath(vehicle.currentNode, vehicle.targetNode);
-    const legMinutes = (sp.minutes > 0 ? sp.minutes : 1);
-    const remainingMinutes = legMinutes * Math.max(0, 1 - vehicle.progressFraction);
-    currTime += remainingMinutes;
+    const legMin = sp.minutes > 0 ? sp.minutes : 1;
+    currTime += legMin * Math.max(0, 1 - vehicle.progressFraction);
     currNode = vehicle.targetNode;
   }
 
@@ -32,7 +42,7 @@ export function calculateStopsArrivals(vehicle, candidateStops, currentTime, gra
   for (const stop of candidateStops) {
     const sp = graph.getShortestPath(currNode, stop.node);
     if (!sp.path || sp.minutes === Infinity) {
-      return null; // unreachable due to road closure or disconnection
+      return null; // Route disconnected
     }
     currTime += sp.minutes;
     arrivals.push(currTime);
@@ -42,22 +52,8 @@ export function calculateStopsArrivals(vehicle, candidateStops, currentTime, gra
 }
 
 /**
- * Dispatches a new ride request using greedy insertion heuristic.
- * 
- * @param {Object} params
- * @param {import('./models.js').Request} params.request
- * @param {import('./models.js').Vehicle[]} params.vehicles
- * @param {import('./models.js').Request[]} params.requests
- * @param {number} params.currentTime
- * @param {import('./graph.js').CampusGraph} params.graph
- * @param {'pool'|'solo'} params.mode
- * @returns {{
- *   success: boolean,
- *   vehicleId?: string,
- *   stops?: import('./models.js').Stop[],
- *   reasons: import('./models.js').RejectionReason[],
- *   rejectionReason?: string
- * }}
+ * Dispatches a request using greedy insertion with lowest marginal cost.
+ * Marginal cost = extra vehicle travel distance (minutes) + alpha * added passenger wait time.
  */
 export function dispatchRequest({
   request,
@@ -65,34 +61,57 @@ export function dispatchRequest({
   requests,
   currentTime,
   graph,
-  mode = 'pool'
+  mode = 'pool',
+  maxDetourFactor = 1.5,
+  alphaWaitWeight = 0.5
 }) {
   const directPath = graph.getShortestPath(request.pickup, request.dropoff);
   const directMinutes = directPath.minutes;
 
-  // Unreachable pickup to dropoff
   if (!directPath.path || directMinutes === Infinity) {
     const rejection = {
       vehicleId: null,
+      code: 'NO_ROUTE_AVAILABLE',
       type: 'routing',
-      message: 'No active route between pickup and dropoff due to road closures'
+      message: 'No open path exists between pickup and dropoff due to active road closures.'
     };
     return {
       success: false,
+      code: 'NO_ROUTE_AVAILABLE',
+      rejectionReason: rejection.message,
       reasons: [rejection],
-      rejectionReason: rejection.message
+      bestNearMiss: null
+    };
+  }
+
+  const availableVehicles = vehicles.filter(v => v.status !== 'broken');
+  if (availableVehicles.length === 0) {
+    const rejection = {
+      vehicleId: null,
+      code: 'NO_VEHICLE_AVAILABLE',
+      type: 'vehicle_unavailable',
+      message: 'All campus fleet shuttles are currently out-of-service or broken down.'
+    };
+    return {
+      success: false,
+      code: 'NO_VEHICLE_AVAILABLE',
+      rejectionReason: rejection.message,
+      reasons: [rejection],
+      bestNearMiss: null
     };
   }
 
   const reasons = [];
   let bestCandidate = null;
+  let bestNearMiss = null;
 
   for (const vehicle of vehicles) {
     if (vehicle.status === 'broken') {
       reasons.push({
         vehicleId: vehicle.id,
+        code: 'NO_VEHICLE_AVAILABLE',
         type: 'vehicle_unavailable',
-        message: `${vehicle.id} is broken down and taking no rides`
+        message: `${vehicle.id} is marked out-of-service.`
       });
       continue;
     }
@@ -100,177 +119,240 @@ export function dispatchRequest({
     if (mode === 'solo' && (vehicle.onboard.length > 0 || vehicle.stops.length > 0)) {
       reasons.push({
         vehicleId: vehicle.id,
+        code: 'CAPACITY_EXCEEDED',
         type: 'capacity',
-        message: `${vehicle.id} is in solo-ride mode and already booked`
+        message: `${vehicle.id} is operating in solo direct mode and already has an active trip.`
       });
       continue;
     }
 
     const existingStops = [...vehicle.stops];
-    let firstFailure = null;
-    let minAddedTime = Infinity;
-    let bestPair = null;
+    let vehicleFirstFailure = null;
+    let minMarginalCost = Infinity;
+    let bestPairForVehicle = null;
 
     const n = existingStops.length;
 
-    // Try EVERY pickup position i (0 to n), and EVERY dropoff position j >= i (i to n)
+    // Try EVERY pickup position i, and dropoff position j >= i
     for (let i = 0; i <= n; i++) {
       for (let j = i; j <= n; j++) {
         const testStops = [...existingStops];
-        const pickupStop = {
+        const pStop = {
           type: 'pickup',
           node: request.pickup,
           requestId: request.id,
           plannedArrival: 0
         };
-        const dropoffStop = {
+        const dStop = {
           type: 'dropoff',
           node: request.dropoff,
           requestId: request.id,
           plannedArrival: 0
         };
 
-        // Insert pickup at i, then dropoff at j+1
-        testStops.splice(i, 0, pickupStop);
-        testStops.splice(j + 1, 0, dropoffStop);
+        testStops.splice(i, 0, pStop);
+        testStops.splice(j + 1, 0, dStop);
 
-        // (a) Capacity constraint: seats never exceed vehicle.capacity at any point
-        let occ = vehicle.occupancy;
-        let capacityExceeded = false;
+        // (a) Capacity Constraint: seat load never exceeds capacity
+        let currentLoad = vehicle.occupancy;
+        let capFailed = false;
+        let peakLoad = currentLoad;
+
         for (const s of testStops) {
           const req = (s.requestId === request.id)
             ? request
             : requests.find(r => r.id === s.requestId);
           const pCount = req ? (req.passengers || 1) : 1;
 
-          if (s.type === 'pickup') occ += pCount;
-          else if (s.type === 'dropoff') occ -= pCount;
+          if (s.type === 'pickup') currentLoad += pCount;
+          else if (s.type === 'dropoff') currentLoad -= pCount;
 
-          if (occ > vehicle.capacity) {
-            capacityExceeded = true;
+          if (currentLoad > peakLoad) peakLoad = currentLoad;
+          if (currentLoad > vehicle.capacity) {
+            capFailed = true;
             break;
           }
         }
 
-        if (capacityExceeded) {
-          if (!firstFailure) {
-            firstFailure = {
+        if (capFailed) {
+          if (!vehicleFirstFailure) {
+            vehicleFirstFailure = {
               vehicleId: vehicle.id,
+              code: 'CAPACITY_EXCEEDED',
               type: 'capacity',
-              message: `${vehicle.id}: Route would exceed capacity of ${vehicle.capacity} seats`
+              message: `${vehicle.id}: Peak route load (${peakLoad} riders) would exceed vehicle capacity of ${vehicle.capacity} seats.`
             };
+            if (!bestNearMiss) {
+              bestNearMiss = {
+                vehicleId: vehicle.id,
+                code: 'CAPACITY_EXCEEDED',
+                details: `Shuttle ${vehicle.id} has ${vehicle.capacity} seats, but route requires ${peakLoad} seats.`
+              };
+            }
           }
           continue;
         }
 
-        // Compute planned arrivals at every stop
+        // (b) Road Connectivity & Planned Stop Arrivals
         const arrivals = calculateStopsArrivals(vehicle, testStops, currentTime, graph);
         if (!arrivals) {
-          if (!firstFailure) {
-            firstFailure = {
+          if (!vehicleFirstFailure) {
+            vehicleFirstFailure = {
               vehicleId: vehicle.id,
+              code: 'NO_ROUTE_AVAILABLE',
               type: 'routing',
-              message: `${vehicle.id}: Route unreachable due to closed road`
+              message: `${vehicle.id}: Planned route traverses a road blocked by closure.`
             };
           }
           continue;
         }
 
-        // (b) Timing for new pickup: arrival must be within [earliest, latest]
-        const pickupArrival = arrivals[i];
-        if (pickupArrival > request.latestPickup) {
-          if (!firstFailure) {
-            firstFailure = {
+        // (c) Pickup Window Feasibility for New Rider
+        const newPickupArrival = arrivals[i];
+        if (newPickupArrival > request.latestPickup) {
+          const delayMin = (newPickupArrival - request.latestPickup).toFixed(1);
+          if (!vehicleFirstFailure) {
+            vehicleFirstFailure = {
               vehicleId: vehicle.id,
+              code: 'PICKUP_WINDOW_INFEASIBLE',
               type: 'timing',
-              message: `${vehicle.id}: Pickup ETA ${(pickupArrival - currentTime).toFixed(1)}m exceeds ${request.windowMin}m window`
+              message: `${vehicle.id}: Pickup ETA t=${newPickupArrival.toFixed(1)}m arrives ${delayMin}m after promised window (t=${request.latestPickup}m).`
             };
+            if (!bestNearMiss) {
+              bestNearMiss = {
+                vehicleId: vehicle.id,
+                code: 'PICKUP_WINDOW_INFEASIBLE',
+                details: `${vehicle.id} pickup ETA is ${delayMin} min late.`
+              };
+            }
           }
           continue;
         }
 
-        // Timing for new dropoff: must not exceed promisedLatestDropoff
-        const dropoffArrival = arrivals[j + 1];
-        if (request.promisedLatestDropoff && dropoffArrival > request.promisedLatestDropoff) {
-          if (!firstFailure) {
-            firstFailure = {
+        // (d) Detour Limit for New Rider
+        const newDropoffArrival = arrivals[j + 1];
+        const newRideTime = newDropoffArrival - newPickupArrival;
+        const maxAllowedRideTime = directMinutes * maxDetourFactor;
+        if (newRideTime > maxAllowedRideTime) {
+          const excess = (newRideTime - maxAllowedRideTime).toFixed(1);
+          if (!vehicleFirstFailure) {
+            vehicleFirstFailure = {
               vehicleId: vehicle.id,
+              code: 'DETOUR_LIMIT_BREACH',
               type: 'detour',
-              message: `${vehicle.id}: Dropoff detour would exceed max allowed detour (+${request.maxDetourMin}m)`
+              message: `${vehicle.id}: Rider ride time (${newRideTime.toFixed(1)}m) exceeds detour limit of ${maxAllowedRideTime.toFixed(1)}m by ${excess}m.`
             };
           }
           continue;
         }
 
-        // (c) EVERY existing passenger's promise still holds
-        let promiseBroken = false;
-        let brokenReason = null;
+        // (e) Invariant: Protect Commitments to EVERY Existing Passenger
+        let existingCommitmentBreached = false;
+        let breachReason = null;
+
         for (let k = 0; k < testStops.length; k++) {
           const st = testStops[k];
           if (st.requestId === request.id) continue;
+
           const exReq = requests.find(r => r.id === st.requestId);
           if (!exReq) continue;
 
-          const stArrival = arrivals[k];
-          if (st.type === 'pickup' && stArrival > exReq.latestPickup) {
-            promiseBroken = true;
-            brokenReason = `${vehicle.id}: Would delay pickup for ${exReq.id} past promise window`;
+          const arrivalTime = arrivals[k];
+
+          // Pickup window protection
+          if (st.type === 'pickup' && arrivalTime > exReq.latestPickup) {
+            existingCommitmentBreached = true;
+            breachReason = {
+              vehicleId: vehicle.id,
+              code: 'PICKUP_WINDOW_INFEASIBLE',
+              type: 'timing',
+              message: `${vehicle.id}: Would delay pickup for ${exReq.id} to t=${arrivalTime.toFixed(1)}m, violating their window.`
+            };
             break;
           }
-          if (st.type === 'dropoff' && exReq.promisedLatestDropoff && stArrival > exReq.promisedLatestDropoff) {
-            promiseBroken = true;
-            brokenReason = `${vehicle.id}: Would add ${(stArrival - exReq.promisedLatestDropoff).toFixed(1)}m detour to ${exReq.id}, breaking promised drop-off`;
-            break;
+
+          // Detour limit protection
+          if (st.type === 'dropoff') {
+            const exDirect = graph.getShortestPath(exReq.pickup, exReq.dropoff).minutes;
+            const exMaxRide = exDirect * (exReq.maxDetourFactor || maxDetourFactor);
+            const actualPickupTime = (exReq.pickedUpAt !== null) ? exReq.pickedUpAt : exReq.createdAt;
+            const exRideTime = arrivalTime - actualPickupTime;
+
+            if (exRideTime > exMaxRide) {
+              const delayMin = (exRideTime - exMaxRide).toFixed(1);
+              existingCommitmentBreached = true;
+              breachReason = {
+                vehicleId: vehicle.id,
+                code: 'DETOUR_LIMIT_BREACH',
+                type: 'detour',
+                message: `${vehicle.id}: Would add ${delayMin}m detour to ${exReq.id} (${exReq.riderName || 'onboard rider'}), breaching their ${exMaxRide.toFixed(1)}m limit.`
+              };
+              if (!bestNearMiss) {
+                bestNearMiss = {
+                  vehicleId: vehicle.id,
+                  code: 'DETOUR_LIMIT_BREACH',
+                  details: `${vehicle.id} had capacity but inserting this stop delays ${exReq.id} by ${delayMin} min, breaching detour limit.`
+                };
+              }
+              break;
+            }
           }
         }
 
-        if (promiseBroken) {
-          if (!firstFailure) {
-            firstFailure = {
-              vehicleId: vehicle.id,
-              type: 'detour',
-              message: brokenReason
-            };
+        if (existingCommitmentBreached) {
+          if (!vehicleFirstFailure && breachReason) {
+            vehicleFirstFailure = breachReason;
           }
           continue;
         }
 
-        // Feasible candidate! Added time relative to existing route or empty
-        const totalRouteTime = arrivals[arrivals.length - 1] - currentTime;
-        if (totalRouteTime < minAddedTime) {
-          minAddedTime = totalRouteTime;
+        // Feasible Candidate Found! Compute marginal cost
+        const existingRouteDist = vehicle.stops.length > 0
+          ? (vehicle.stops[vehicle.stops.length - 1].plannedArrival - currentTime)
+          : 0;
+        const newRouteDist = arrivals[arrivals.length - 1] - currentTime;
+        const extraDist = Math.max(0, newRouteDist - existingRouteDist);
+        const passengerWait = Math.max(0, newPickupArrival - currentTime);
+
+        const marginalCost = extraDist + alphaWaitWeight * passengerWait;
+
+        if (marginalCost < minMarginalCost) {
+          minMarginalCost = marginalCost;
           const annotatedStops = testStops.map((st, idx) => ({
             ...st,
             plannedArrival: parseFloat(arrivals[idx].toFixed(1))
           }));
-          bestPair = {
+          bestPairForVehicle = {
             vehicle,
             testStops: annotatedStops,
-            addedTime: minAddedTime
+            marginalCost
           };
         }
       }
     }
 
-    if (bestPair) {
-      if (!bestCandidate || bestPair.addedTime < bestCandidate.addedTime) {
-        bestCandidate = bestPair;
+    if (bestPairForVehicle) {
+      if (!bestCandidate || bestPairForVehicle.marginalCost < bestCandidate.marginalCost) {
+        bestCandidate = bestPairForVehicle;
       }
     } else {
-      reasons.push(firstFailure || {
+      reasons.push(vehicleFirstFailure || {
         vehicleId: vehicle.id,
+        code: 'PICKUP_WINDOW_INFEASIBLE',
         type: 'timing',
-        message: `${vehicle.id}: No feasible stop slot found within constraints`
+        message: `${vehicle.id}: No feasible stop slot found within detour and capacity bounds.`
       });
     }
   }
 
   if (!bestCandidate) {
-    const primaryReason = reasons[0]?.message || 'All vehicles busy or constraints exceeded';
+    const primary = reasons[0];
     return {
       success: false,
+      code: primary?.code || 'CAPACITY_EXCEEDED',
+      rejectionReason: primary?.message || 'Request cannot be accommodated across any campus shuttle.',
       reasons,
-      rejectionReason: primaryReason
+      bestNearMiss: bestNearMiss ? bestNearMiss.details : primary?.message
     };
   }
 
@@ -278,6 +360,7 @@ export function dispatchRequest({
     success: true,
     vehicleId: bestCandidate.vehicle.id,
     stops: bestCandidate.testStops,
-    reasons: []
+    reasons: [],
+    marginalCost: bestCandidate.marginalCost
   };
 }
