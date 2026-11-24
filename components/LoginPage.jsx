@@ -219,9 +219,9 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                 </span>
               </div>
               <div>
-                <h3 className="font-extrabold text-base text-white">Shuttle Captain Cockpit</h3>
+                <h3 className="font-extrabold text-base text-white">Campus Buses & Driver Portal</h3>
                 <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                  Driver tablet HUD. Live stop-by-stop passenger manifest, boarding checklists, and maintenance break reports.
+                  Bus driver console. Receive live incoming ride notifications, accept passenger trips, and view route stops.
                 </p>
               </div>
             </div>
@@ -371,14 +371,14 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                   <Bus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-base text-white">Shuttle Captain Terminal Login</h2>
-                  <p className="text-xs text-slate-400">Select assigned campus vehicle and driver credentials</p>
+                  <h2 className="font-bold text-base text-white">Bus Driver Terminal Login</h2>
+                  <p className="text-xs text-slate-400">Select assigned campus bus and driver credentials</p>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Select Assigned Shuttle
+                  Select Assigned Campus Bus
                 </label>
                 <div className="relative">
                   <Bus className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
@@ -387,9 +387,9 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                     onChange={(e) => setCaptainVehicle(e.target.value)}
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500"
                   >
-                    <option value="V1">Shuttle V1 (Campus Express - Capacity: 6)</option>
-                    <option value="V2">Shuttle V2 (Hostel Shuttle - Capacity: 6)</option>
-                    <option value="V3">Shuttle V3 (Library Loop - Capacity: 4)</option>
+                    <option value="V1">Campus Bus V1 (Campus Express - Capacity: 4)</option>
+                    <option value="V2">Campus Bus V2 (Hostel Shuttle - Capacity: 4)</option>
+                    <option value="V3">Campus Bus V3 (Haryana Regional Bus - Capacity: 4)</option>
                   </select>
                 </div>
               </div>
@@ -440,7 +440,7 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                   type="submit"
                   className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-bold text-sm text-white shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2"
                 >
-                  <span>Launch Shuttle {captainVehicle} Cockpit</span>
+                  <span>Launch Campus Bus {captainVehicle} Terminal</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
@@ -450,7 +450,7 @@ export default function LoginPage({ onLogin, onOpenProblemSolution, onOpenCompar
                   className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700/80 text-xs font-semibold text-slate-300 border border-slate-700 transition-all flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>⚡ Quick 1-Click Demo Login as Captain Rajesh (Shuttle V1)</span>
+                  <span>⚡ Quick 1-Click Demo Login as Driver Rajesh (Bus V1)</span>
                 </button>
               </div>
             </form>

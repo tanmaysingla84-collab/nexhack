@@ -10,7 +10,11 @@ import {
   Navigation,
   Gauge,
   Clock,
-  Compass
+  Compass,
+  Bell,
+  Check,
+  X,
+  Sparkles
 } from 'lucide-react';
 import { playSound } from './AudioEffects';
 
@@ -23,6 +27,7 @@ export default function CaptainView({
   assignedVehicleId = 'V1'
 }) {
   const [selectedVehicleId, setSelectedVehicleId] = useState(assignedVehicleId || vehicles[0]?.id || 'V1');
+  const [actionLoading, setActionLoading] = useState(null);
   const nodeMap = new Map(nodes.map(n => [n.id, n.name]));
 
   React.useEffect(() => {
@@ -34,9 +39,43 @@ export default function CaptainView({
   const vehicle = vehicles.find(v => v.id === selectedVehicleId) || vehicles[0];
   const isBroken = vehicle?.status === 'broken';
 
+  const pendingRequests = requests.filter(r => r.status === 'pending_driver');
+
   const onboardRiders = (vehicle?.onboard || []).map(rId =>
     requests.find(r => r.id === rId) || { id: rId, riderName: `Student ${rId}`, dropoff: 'Campus Stop' }
   );
+
+  const handleAccept = async (requestId) => {
+    if (soundEnabled) playSound('success');
+    setActionLoading(requestId);
+    try {
+      await fetch(`/api/requests/${requestId}/driver-accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleId: selectedVehicleId })
+      });
+    } catch (e) {
+      console.error('Accept error:', e);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDecline = async (requestId) => {
+    if (soundEnabled) playSound('alert');
+    setActionLoading(requestId);
+    try {
+      await fetch(`/api/requests/${requestId}/driver-decline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Driver at full capacity or detour limits exceeded' })
+      });
+    } catch (e) {
+      console.error('Decline error:', e);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-md">
@@ -56,22 +95,98 @@ export default function CaptainView({
             }}
           >
             <Bus className="w-3.5 h-3.5" />
-            <span>{v.id}</span>
+            <span>Bus {v.id}</span>
             {v.status === 'broken' && <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>}
           </button>
         ))}
       </div>
 
+      {/* 🚨 INCOMING RIDE REQUESTS (MUST BE ACCEPTED BY DRIVER) */}
+      {pendingRequests.length > 0 && (
+        <div className="p-4 bg-gradient-to-b from-amber-950/80 via-slate-900 to-amber-950/60 border-2 border-amber-500/80 rounded-2xl shadow-xl shadow-amber-500/20 backdrop-blur-md space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-amber-400 animate-bounce" />
+              <span className="font-extrabold text-xs tracking-wider text-amber-300 uppercase">
+                Incoming Ride Request ({pendingRequests.length})
+              </span>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
+              DRIVER CONFIRMATION REQUIRED
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {pendingRequests.map(r => (
+              <div key={r.id} className="p-3 bg-slate-950/95 border border-amber-500/40 rounded-xl space-y-2.5 shadow-inner">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base">🎓</span>
+                    <div>
+                      <div className="font-extrabold text-sm text-white">{r.riderName || r.id}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">{r.studentId || r.id}</div>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                    {r.passengers || 1} Seat(s)
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 text-xs bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400 font-medium">Pickup Station:</span>
+                    <span className="font-bold text-emerald-400 truncate max-w-[200px]">
+                      {nodeMap.get(r.pickup) || r.pickup}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400 font-medium">Dropoff Destination:</span>
+                    <span className="font-bold text-orange-400 truncate max-w-[200px]">
+                      {nodeMap.get(r.dropoff) || r.dropoff}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] pt-0.5 border-t border-slate-800">
+                    <span className="text-slate-500">Service Zone:</span>
+                    <span className="font-semibold text-sky-400">
+                      {r.pickup?.startsWith('H') || r.dropoff?.startsWith('H') ? '🗺️ Haryana Regional' : '🏫 Inside Campus Shuttle'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-0.5">
+                  <button
+                    onClick={() => handleAccept(r.id)}
+                    disabled={actionLoading === r.id}
+                    className="py-2.5 px-3 rounded-xl font-extrabold text-xs bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-md shadow-emerald-600/30 flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>{actionLoading === r.id ? 'Accepting...' : 'Accept Ride'}</span>
+                  </button>
+                  <button
+                    onClick={() => handleDecline(r.id)}
+                    disabled={actionLoading === r.id}
+                    className="py-2.5 px-3 rounded-xl font-bold text-xs bg-rose-950/60 border border-rose-800/80 hover:bg-rose-900/60 text-rose-300 transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Decline</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {vehicle ? (
         <div className="p-4 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl backdrop-blur-md space-y-4">
-          {/* Cockpit Status Header */}
+          {/* Driver Terminal Header */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: isBroken ? '#ef4444' : (vehicle.color || '#f97316') }} />
-                <h3 className="font-extrabold text-sm text-white">Shuttle {vehicle.id} Cockpit</h3>
+                <h3 className="font-extrabold text-sm text-white">Campus Bus {vehicle.id}</h3>
               </div>
-              <span className="text-[11px] text-slate-400 font-mono">Captain Nav Station</span>
+              <span className="text-[11px] text-slate-400 font-mono">Bus Driver Terminal</span>
             </div>
             <span className={`status-pill ${vehicle.status}`}>
               {isBroken ? '🚨 BREAKDOWN' : vehicle.status.toUpperCase()}
@@ -81,7 +196,7 @@ export default function CaptainView({
           {/* Instruments Grid */}
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] font-semibold text-slate-400 block mb-0.5">CURRENT STATION</span>
+              <span className="text-[10px] font-semibold text-slate-400 block mb-0.5">CURRENT LOCATION</span>
               <span className="font-bold text-white text-xs truncate block">
                 {nodeMap.get(vehicle.currentNode) || vehicle.currentNode}
               </span>
@@ -90,7 +205,7 @@ export default function CaptainView({
             <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
               <span className="text-[10px] font-semibold text-slate-400 block mb-0.5">NEXT HEADING</span>
               <span className="font-bold text-sky-400 text-xs truncate block">
-                {vehicle.targetNode ? (nodeMap.get(vehicle.targetNode) || vehicle.targetNode) : 'Stationary'}
+                {vehicle.targetNode ? (nodeMap.get(vehicle.targetNode) || vehicle.targetNode) : 'At Station'}
               </span>
             </div>
           </div>
@@ -100,10 +215,10 @@ export default function CaptainView({
             <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
               <span className="flex items-center gap-1 text-slate-400 text-[11px]">
                 <Users className="w-3.5 h-3.5" />
-                Live Seat Occupancy
+                Live Bus Seats
               </span>
               <span className="font-mono text-orange-400 font-bold">
-                {vehicle.occupancy}/{vehicle.capacity} Seats Taken
+                {vehicle.occupancy}/{vehicle.capacity} Seats Filled
               </span>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
@@ -122,13 +237,13 @@ export default function CaptainView({
             <div className="flex items-center justify-between text-xs font-bold text-slate-300">
               <span className="flex items-center gap-1.5">
                 <Navigation className="w-3.5 h-3.5 text-sky-400" />
-                Next Route Stops ({vehicle.stops.length})
+                Assigned Route Stops ({vehicle.stops.length})
               </span>
             </div>
 
             {vehicle.stops.length === 0 ? (
               <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-center text-xs text-slate-400">
-                All assigned stops completed. Shuttle is waiting at station.
+                All assigned stops completed. Bus is standing at station ready for rides.
               </div>
             ) : (
               <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
@@ -175,7 +290,7 @@ export default function CaptainView({
 
             {onboardRiders.length === 0 ? (
               <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-center text-xs text-slate-500">
-                No students currently in vehicle seats.
+                No students currently in bus seats.
               </div>
             ) : (
               <div className="space-y-1">
@@ -205,7 +320,7 @@ export default function CaptainView({
             }}
           >
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span>{isBroken ? 'Clear Breakdown & Re-commission' : 'Simulate Vehicle Breakdown'}</span>
+            <span>{isBroken ? 'Clear Breakdown & Re-commission Bus' : 'Simulate Bus Breakdown'}</span>
           </button>
         </div>
       ) : null}

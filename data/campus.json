@@ -22,7 +22,8 @@
       "x": 312,
       "y": 162,
       "lat": 29.3068,
-      "lng": 76.8942
+      "lng": 76.8942,
+      "region": "campus"
     },
     {
       "id": "N02",
@@ -31,7 +32,8 @@
       "x": 355,
       "y": 185,
       "lat": 29.3066,
-      "lng": 76.8946
+      "lng": 76.8946,
+      "region": "campus"
     },
     {
       "id": "N03",
@@ -40,7 +42,8 @@
       "x": 305,
       "y": 245,
       "lat": 29.3063,
-      "lng": 76.894
+      "lng": 76.894,
+      "region": "campus"
     },
     {
       "id": "N04",
@@ -49,7 +52,8 @@
       "x": 365,
       "y": 235,
       "lat": 29.3063,
-      "lng": 76.8948
+      "lng": 76.8948,
+      "region": "campus"
     },
     {
       "id": "N05",
@@ -58,7 +62,8 @@
       "x": 332,
       "y": 285,
       "lat": 29.3059,
-      "lng": 76.8944
+      "lng": 76.8944,
+      "region": "campus"
     },
     {
       "id": "N06",
@@ -67,7 +72,8 @@
       "x": 288,
       "y": 335,
       "lat": 29.3056,
-      "lng": 76.8938
+      "lng": 76.8938,
+      "region": "campus"
     },
     {
       "id": "N07",
@@ -76,7 +82,8 @@
       "x": 358,
       "y": 385,
       "lat": 29.3053,
-      "lng": 76.8947
+      "lng": 76.8947,
+      "region": "campus"
     },
     {
       "id": "N08",
@@ -85,7 +92,8 @@
       "x": 332,
       "y": 422,
       "lat": 29.305,
-      "lng": 76.8944
+      "lng": 76.8944,
+      "region": "campus"
     },
     {
       "id": "N09",
@@ -94,7 +102,8 @@
       "x": 178,
       "y": 432,
       "lat": 29.3049,
-      "lng": 76.8922
+      "lng": 76.8922,
+      "region": "campus"
     },
     {
       "id": "N10",
@@ -103,7 +112,8 @@
       "x": 275,
       "y": 428,
       "lat": 29.305,
-      "lng": 76.8936
+      "lng": 76.8936,
+      "region": "campus"
     },
     {
       "id": "N11",
@@ -112,7 +122,8 @@
       "x": 495,
       "y": 388,
       "lat": 29.3052,
-      "lng": 76.8966
+      "lng": 76.8966,
+      "region": "campus"
     },
     {
       "id": "N12",
@@ -121,7 +132,8 @@
       "x": 505,
       "y": 260,
       "lat": 29.3061,
-      "lng": 76.8968
+      "lng": 76.8968,
+      "region": "campus"
     },
     {
       "id": "N13",
@@ -130,7 +142,8 @@
       "x": 578,
       "y": 460,
       "lat": 29.3047,
-      "lng": 76.8978
+      "lng": 76.8978,
+      "region": "campus"
     },
     {
       "id": "N14",
@@ -139,7 +152,8 @@
       "x": 380,
       "y": 475,
       "lat": 29.3046,
-      "lng": 76.895
+      "lng": 76.895,
+      "region": "campus"
     },
     {
       "id": "N15",
@@ -148,7 +162,8 @@
       "x": 332,
       "y": 515,
       "lat": 29.3043,
-      "lng": 76.8944
+      "lng": 76.8944,
+      "region": "campus"
     },
     {
       "id": "N16",
@@ -157,7 +172,8 @@
       "x": 305,
       "y": 572,
       "lat": 29.3039,
-      "lng": 76.894
+      "lng": 76.894,
+      "region": "campus"
     },
     {
       "id": "N17",
@@ -166,7 +182,8 @@
       "x": 365,
       "y": 595,
       "lat": 29.3037,
-      "lng": 76.8948
+      "lng": 76.8948,
+      "region": "campus"
     },
     {
       "id": "N18",
@@ -175,7 +192,8 @@
       "x": 465,
       "y": 565,
       "lat": 29.3039,
-      "lng": 76.8962
+      "lng": 76.8962,
+      "region": "campus"
     },
     {
       "id": "N19",
@@ -184,7 +202,8 @@
       "x": 395,
       "y": 665,
       "lat": 29.3032,
-      "lng": 76.8952
+      "lng": 76.8952,
+      "region": "campus"
     },
     {
       "id": "N20",
@@ -193,7 +212,8 @@
       "x": 435,
       "y": 630,
       "lat": 29.3035,
-      "lng": 76.8958
+      "lng": 76.8958,
+      "region": "campus"
     },
     {
       "id": "N21",
@@ -202,7 +222,8 @@
       "x": 550,
       "y": 780,
       "lat": 29.3024,
-      "lng": 76.8974
+      "lng": 76.8974,
+      "region": "campus"
     },
     {
       "id": "N22",
@@ -211,7 +232,108 @@
       "x": 605,
       "y": 805,
       "lat": 29.3022,
-      "lng": 76.8982
+      "lng": 76.8982,
+      "region": "campus"
+    },
+    {
+      "id": "H01",
+      "name": "Panipat Railway Junction & City Hub",
+      "type": "regional",
+      "region": "haryana",
+      "x": 680,
+      "y": 120,
+      "lat": 29.3909,
+      "lng": 76.9635
+    },
+    {
+      "id": "H02",
+      "name": "Panipat Skylark GT Road Hub",
+      "type": "regional",
+      "region": "haryana",
+      "x": 720,
+      "y": 220,
+      "lat": 29.385,
+      "lng": 76.97
+    },
+    {
+      "id": "H03",
+      "name": "Sonipat Murthal Highway Food Hub",
+      "type": "regional",
+      "region": "haryana",
+      "x": 730,
+      "y": 920,
+      "lat": 29.025,
+      "lng": 77.07
+    },
+    {
+      "id": "H04",
+      "name": "Karnal Oasis GT Road Terminal",
+      "type": "regional",
+      "region": "haryana",
+      "x": 620,
+      "y": 50,
+      "lat": 29.6857,
+      "lng": 76.9907
+    },
+    {
+      "id": "H05",
+      "name": "Kurukshetra University Main Gate",
+      "type": "regional",
+      "region": "haryana",
+      "x": 500,
+      "y": 30,
+      "lat": 29.9695,
+      "lng": 76.818
+    },
+    {
+      "id": "H06",
+      "name": "Rohtak New Bus Stand Hub",
+      "type": "regional",
+      "region": "haryana",
+      "x": 100,
+      "y": 850,
+      "lat": 28.8955,
+      "lng": 76.6066
+    },
+    {
+      "id": "H07",
+      "name": "Delhi-NCR Singhu Border Transit Post",
+      "type": "regional",
+      "region": "haryana",
+      "x": 710,
+      "y": 980,
+      "lat": 28.875,
+      "lng": 77.13
+    },
+    {
+      "id": "H08",
+      "name": "Gurugram Cyber City Metro Interchange",
+      "type": "regional",
+      "region": "haryana",
+      "x": 650,
+      "y": 1010,
+      "lat": 28.49,
+      "lng": 77.09
+    },
+    {
+      "id": "H09",
+      "name": "Ambala Cantt Railway Junction",
+      "type": "regional",
+      "region": "haryana",
+      "x": 380,
+      "y": 20,
+      "lat": 30.33,
+      "lng": 76.83
+    },
+    {
+      "id": "H10",
+      "name": "Hisar Bus Terminal",
+      "type": "regional",
+      "region": "haryana",
+      "x": 40,
+      "y": 650,
+      "lat": 29.15,
+      "lng": 75.72
     }
   ],
   "edges": [
@@ -802,6 +924,226 @@
           780
         ]
       ]
+    },
+    {
+      "id": "EH01",
+      "from": "N01",
+      "to": "H01",
+      "speedKmh": 45,
+      "minutes": 0.54,
+      "lengthMeters": 407.4,
+      "lengthPx": 370.4,
+      "status": "open",
+      "waypoints": [
+        [
+          312,
+          162
+        ],
+        [
+          680,
+          120
+        ]
+      ]
+    },
+    {
+      "id": "EH02",
+      "from": "N22",
+      "to": "H01",
+      "speedKmh": 45,
+      "minutes": 1.01,
+      "lengthMeters": 758,
+      "lengthPx": 689.1,
+      "status": "open",
+      "waypoints": [
+        [
+          605,
+          805
+        ],
+        [
+          680,
+          120
+        ]
+      ]
+    },
+    {
+      "id": "EH03",
+      "from": "H01",
+      "to": "H02",
+      "speedKmh": 50,
+      "minutes": 0.14,
+      "lengthMeters": 118.5,
+      "lengthPx": 107.7,
+      "status": "open",
+      "waypoints": [
+        [
+          680,
+          120
+        ],
+        [
+          720,
+          220
+        ]
+      ]
+    },
+    {
+      "id": "EH04",
+      "from": "H02",
+      "to": "H03",
+      "speedKmh": 60,
+      "minutes": 0.77,
+      "lengthMeters": 770.1,
+      "lengthPx": 700.1,
+      "status": "open",
+      "waypoints": [
+        [
+          720,
+          220
+        ],
+        [
+          730,
+          920
+        ]
+      ]
+    },
+    {
+      "id": "EH05",
+      "from": "H03",
+      "to": "H07",
+      "speedKmh": 60,
+      "minutes": 0.07,
+      "lengthMeters": 69.5,
+      "lengthPx": 63.2,
+      "status": "open",
+      "waypoints": [
+        [
+          730,
+          920
+        ],
+        [
+          710,
+          980
+        ]
+      ]
+    },
+    {
+      "id": "EH06",
+      "from": "H07",
+      "to": "H08",
+      "speedKmh": 55,
+      "minutes": 0.08,
+      "lengthMeters": 73.8,
+      "lengthPx": 67.1,
+      "status": "open",
+      "waypoints": [
+        [
+          710,
+          980
+        ],
+        [
+          650,
+          1010
+        ]
+      ]
+    },
+    {
+      "id": "EH07",
+      "from": "H01",
+      "to": "H04",
+      "speedKmh": 60,
+      "minutes": 0.1,
+      "lengthMeters": 101.4,
+      "lengthPx": 92.2,
+      "status": "open",
+      "waypoints": [
+        [
+          680,
+          120
+        ],
+        [
+          620,
+          50
+        ]
+      ]
+    },
+    {
+      "id": "EH08",
+      "from": "H04",
+      "to": "H05",
+      "speedKmh": 60,
+      "minutes": 0.13,
+      "lengthMeters": 133.9,
+      "lengthPx": 121.7,
+      "status": "open",
+      "waypoints": [
+        [
+          620,
+          50
+        ],
+        [
+          500,
+          30
+        ]
+      ]
+    },
+    {
+      "id": "EH09",
+      "from": "H05",
+      "to": "H09",
+      "speedKmh": 60,
+      "minutes": 0.13,
+      "lengthMeters": 132.4,
+      "lengthPx": 120.4,
+      "status": "open",
+      "waypoints": [
+        [
+          500,
+          30
+        ],
+        [
+          380,
+          20
+        ]
+      ]
+    },
+    {
+      "id": "EH10",
+      "from": "N01",
+      "to": "H06",
+      "speedKmh": 50,
+      "minutes": 0.95,
+      "lengthMeters": 791.9,
+      "lengthPx": 719.9,
+      "status": "open",
+      "waypoints": [
+        [
+          312,
+          162
+        ],
+        [
+          100,
+          850
+        ]
+      ]
+    },
+    {
+      "id": "EH11",
+      "from": "H06",
+      "to": "H10",
+      "speedKmh": 60,
+      "minutes": 0.23,
+      "lengthMeters": 229.7,
+      "lengthPx": 208.8,
+      "status": "open",
+      "waypoints": [
+        [
+          100,
+          850
+        ],
+        [
+          40,
+          650
+        ]
+      ]
     }
   ],
   "stops": [
@@ -809,97 +1151,183 @@
       "id": "S01",
       "name": "North Entrance Gate",
       "nodeId": "N01",
-      "type": "gate"
+      "type": "gate",
+      "region": "campus"
     },
     {
       "id": "S02",
       "name": "North Parking & Security",
       "nodeId": "N02",
-      "type": "parking"
+      "type": "parking",
+      "region": "campus"
     },
     {
       "id": "S03",
       "name": "North Academic Block (Block A)",
       "nodeId": "N03",
-      "type": "building"
+      "type": "building",
+      "region": "campus"
     },
     {
       "id": "S04",
       "name": "Central Administrative Block",
       "nodeId": "N04",
-      "type": "admin"
+      "type": "admin",
+      "region": "campus"
     },
     {
       "id": "S05",
       "name": "West Academic Wing (Block B)",
       "nodeId": "N06",
-      "type": "building"
+      "type": "building",
+      "region": "campus"
     },
     {
       "id": "S06",
       "name": "Girls Hostel & Mess",
       "nodeId": "N07",
-      "type": "hostel"
+      "type": "hostel",
+      "region": "campus"
     },
     {
       "id": "S07",
       "name": "Sports Complex & Cricket Pavilion",
       "nodeId": "N09",
-      "type": "sports"
+      "type": "sports",
+      "region": "campus"
     },
     {
       "id": "S08",
       "name": "Boys Hostel Strip (Tagore & Raman)",
       "nodeId": "N11",
-      "type": "hostel"
+      "type": "hostel",
+      "region": "campus"
     },
     {
       "id": "S09",
       "name": "East Hostel & Playground Hub",
       "nodeId": "N12",
-      "type": "hostel"
+      "type": "hostel",
+      "region": "campus"
     },
     {
       "id": "S10",
       "name": "Staff & Faculty Housing",
       "nodeId": "N13",
-      "type": "building"
+      "type": "building",
+      "region": "campus"
     },
     {
       "id": "S11",
       "name": "Central Academic Megablock",
       "nodeId": "N14",
-      "type": "building"
+      "type": "building",
+      "region": "campus"
     },
     {
       "id": "S12",
       "name": "Student Center & Cafeteria",
       "nodeId": "N16",
-      "type": "building"
+      "type": "building",
+      "region": "campus"
     },
     {
       "id": "S13",
       "name": "Gateway Landmark Building (Central Library)",
       "nodeId": "N17",
-      "type": "landmark"
+      "type": "landmark",
+      "region": "campus"
     },
     {
       "id": "S14",
       "name": "South Academic Complex",
       "nodeId": "N18",
-      "type": "building"
+      "type": "building",
+      "region": "campus"
     },
     {
       "id": "S15",
       "name": "South Parking & Field Loop",
       "nodeId": "N19",
-      "type": "parking"
+      "type": "parking",
+      "region": "campus"
     },
     {
       "id": "S16",
       "name": "South-East Main Entrance Gate",
       "nodeId": "N22",
-      "type": "gate"
+      "type": "gate",
+      "region": "campus"
+    },
+    {
+      "id": "S17",
+      "name": "Panipat Railway Junction & City Hub",
+      "nodeId": "H01",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S18",
+      "name": "Panipat Skylark GT Road Hub",
+      "nodeId": "H02",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S19",
+      "name": "Sonipat Murthal Highway Food Hub",
+      "nodeId": "H03",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S20",
+      "name": "Karnal Oasis GT Road Terminal",
+      "nodeId": "H04",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S21",
+      "name": "Kurukshetra University Main Gate",
+      "nodeId": "H05",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S22",
+      "name": "Rohtak New Bus Stand Hub",
+      "nodeId": "H06",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S23",
+      "name": "Delhi-NCR Singhu Border Transit Post",
+      "nodeId": "H07",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S24",
+      "name": "Gurugram Cyber City Metro Interchange",
+      "nodeId": "H08",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S25",
+      "name": "Ambala Cantt Railway Junction",
+      "nodeId": "H09",
+      "type": "regional",
+      "region": "haryana"
+    },
+    {
+      "id": "S26",
+      "name": "Hisar Bus Terminal",
+      "nodeId": "H10",
+      "type": "regional",
+      "region": "haryana"
     }
   ]
 }

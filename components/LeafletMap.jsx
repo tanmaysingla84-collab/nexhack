@@ -11,7 +11,12 @@ const nodeIcons = {
   sports: '⚽',
   admin: '🏢',
   amenity: '🎭',
-  health: '🏥'
+  health: '🏥',
+  regional: '🏙️',
+  parking: '🅿️',
+  landmark: '🏛️',
+  building: '🏫',
+  junction: '🛣️'
 };
 
 // Geeta University Campus Spatial Bounds (Strict geographic limits at real university parcel)

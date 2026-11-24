@@ -57,7 +57,7 @@ export default function TopNavbar({
             {role === 'captain' && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
                 <Bus className="w-3 h-3" />
-                CAPTAIN COCKPIT • SHUTTLE {user.vehicleId || 'V1'}
+                BUS DRIVER TERMINAL • BUS {user.vehicleId || 'V1'}
               </span>
             )}
             {role === 'admin' && (

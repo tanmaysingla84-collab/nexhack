@@ -466,7 +466,7 @@ export default function CampusPoolPage() {
           </div>
         )}
 
-        {/* 2. SHUTTLE CAPTAIN COCKPIT DEDICATED TERMINAL */}
+        {/* 2. CAMPUS BUSES & DRIVER DEDICATED TERMINAL */}
         {role === 'captain' && (
           <div className="app-main-layout">
             {/* Spatial Leaflet Map Container (Tracking Captain's Vehicle) */}
@@ -481,7 +481,7 @@ export default function CampusPoolPage() {
               />
             </div>
 
-            {/* Right Captain Cockpit Sidebar */}
+            {/* Right Bus Driver Portal Sidebar */}
             <div className="w-full h-full overflow-y-auto pr-1">
               <CaptainView
                 vehicles={simState?.vehicles || []}

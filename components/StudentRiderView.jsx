@@ -13,7 +13,11 @@ import {
   AlertCircle,
   XCircle,
   CreditCard,
-  Bus
+  Bus,
+  Compass,
+  Radio,
+  Building,
+  Map as MapIcon
 } from 'lucide-react';
 import { playSound } from './AudioEffects';
 
@@ -28,8 +32,9 @@ export default function StudentRiderView({
   activeRideId: externalActiveRideId,
   onRidePlaced
 }) {
-  const [pickup, setPickup] = useState('girls_hostel');
-  const [dropoff, setDropoff] = useState('student_center');
+  const [region, setRegion] = useState('campus'); // 'campus' | 'haryana'
+  const [pickup, setPickup] = useState('N07');
+  const [dropoff, setDropoff] = useState('N16');
   const [rideType, setRideType] = useState('pool'); // 'pool' | 'solo'
   const [passengers, setPassengers] = useState(1);
   const [activeRideId, setActiveRideId] = useState(externalActiveRideId || null);
@@ -40,26 +45,36 @@ export default function StudentRiderView({
     }
   }, [externalActiveRideId]);
 
-  // Sync station selections with loaded nodes
+  // Separate stations by region
+  const campusNodes = nodes.filter(n => n.region === 'campus' || (!n.region && !n.id.startsWith('H')));
+  const haryanaNodes = nodes.filter(n => n.region === 'haryana' || n.id.startsWith('H'));
+  const activeNodes = region === 'campus' ? campusNodes : haryanaNodes;
+
+  // When region changes or nodes load, update pickup and dropoff to match region
   useEffect(() => {
-    if (nodes && nodes.length > 0) {
-      if (!nodes.some(n => n.id === pickup)) {
-        setPickup(nodes.find(n => n.id.includes('hostel'))?.id || nodes[0].id);
+    if (activeNodes.length > 0) {
+      const currentPickupValid = activeNodes.some(n => n.id === pickup);
+      const currentDropoffValid = activeNodes.some(n => n.id === dropoff);
+
+      if (!currentPickupValid) {
+        setPickup(activeNodes[0].id);
       }
-      if (!nodes.some(n => n.id === dropoff)) {
-        setDropoff(nodes.find(n => n.id.includes('student') || n.id.includes('academic') || n.id.includes('gateway'))?.id || nodes[1]?.id || nodes[0].id);
+      if (!currentDropoffValid) {
+        setDropoff(activeNodes.length > 1 ? activeNodes[1].id : activeNodes[0].id);
       }
     }
-  }, [nodes]);
+  }, [region, nodes]);
 
-  // Find user's active ride
+  // Find user's active ride (including pending driver approval)
   const currentRideId = externalActiveRideId || activeRideId;
   const activeRide = requests.find(r =>
-    (r.id === currentRideId || 
-     (currentUser?.name && r.riderName?.toLowerCase().includes(currentUser.name.toLowerCase())) || 
+    (r.id === currentRideId ||
+     (currentUser?.name && r.riderName?.toLowerCase().includes(currentUser.name.toLowerCase())) ||
      (currentUser?.id && r.studentId === currentUser.id)) &&
-    ['waiting', 'assigned', 'onboard'].includes(r.status)
-  ) || (currentRideId ? requests.find(r => r.id === currentRideId && ['waiting', 'assigned', 'onboard'].includes(r.status)) : null);
+    ['pending_driver', 'waiting', 'assigned', 'onboard'].includes(r.status)
+  ) || (currentRideId ? requests.find(r => r.id === currentRideId && ['pending_driver', 'waiting', 'assigned', 'onboard', 'rejected'].includes(r.status)) : null);
+
+  const nodeMap = new Map(nodes.map(n => [n.id, n.name]));
 
   const handleBook = async (e) => {
     e.preventDefault();
@@ -70,24 +85,15 @@ export default function StudentRiderView({
 
     if (soundEnabled) playSound('success');
 
-    // Confetti effect
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ['#f97316', '#38bdf8', '#10b981']
-      });
-    } catch (err) {}
-
     const result = await onAddRequest({
       pickup,
       dropoff,
       passengers: parseInt(passengers, 10),
-      windowMin: 10,
+      windowMin: region === 'haryana' ? 20 : 10,
       maxDetourFactor: rideType === 'pool' ? 1.5 : 1.0,
       riderName: currentUser?.name || 'Aarav Sharma',
-      studentId: currentUser?.id || 'GU24-CSE-1042'
+      studentId: currentUser?.id || 'GU24-CSE-1042',
+      region
     });
 
     if (result?.requestId) {
@@ -126,28 +132,96 @@ export default function StudentRiderView({
         </div>
       </div>
 
-      {/* Live Active Ride Card / Boarding Pass */}
-      {activeRide ? (
-        <div className="p-4 bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border-2 border-orange-500/40 rounded-2xl shadow-xl backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
+      {/* 1. PENDING DRIVER APPROVAL CARD */}
+      {activeRide && activeRide.status === 'pending_driver' && (
+        <div className="p-4 bg-gradient-to-b from-amber-950/70 via-slate-900 to-amber-950/40 border-2 border-amber-500/60 rounded-2xl shadow-xl backdrop-blur-md relative overflow-hidden animate-pulse">
+          <div className="flex items-center justify-between pb-3 border-b border-amber-500/30 mb-3">
+            <div className="flex items-center gap-2">
+              <Radio className="w-4 h-4 text-amber-400 animate-spin" />
+              <span className="font-extrabold text-xs tracking-wider text-amber-300 uppercase">
+                AWAITING BUS DRIVER ACCEPTANCE
+              </span>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+              DISPATCHED
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-300 leading-relaxed mb-3">
+            Your booking request has been sent to active campus bus drivers. The ride will confirm as soon as the driver clicks <strong className="text-emerald-400">[Accept Ride]</strong> on the Bus Driver Terminal.
+          </p>
+
+          <div className="space-y-1.5 text-xs bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 mb-3">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Pickup Station:</span>
+              <span className="font-bold text-emerald-400">{nodeMap.get(activeRide.pickup) || activeRide.pickup}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Dropoff Destination:</span>
+              <span className="font-bold text-orange-400">{nodeMap.get(activeRide.dropoff) || activeRide.dropoff}</span>
+            </div>
+            <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-800">
+              <span className="text-slate-400">Zone:</span>
+              <span className="font-semibold text-sky-400">
+                {activeRide.pickup?.startsWith('H') || activeRide.dropoff?.startsWith('H') ? '🗺️ Anywhere in Haryana' : '🏫 Inside Campus Shuttle'}
+              </span>
+            </div>
+          </div>
+
+          <button
+            className="w-full py-2 rounded-xl text-xs font-bold text-rose-400 bg-rose-950/40 border border-rose-800/50 hover:bg-rose-900/50 transition-colors flex items-center justify-center gap-1.5"
+            onClick={() => {
+              if (soundEnabled) playSound('alert');
+              onCancelRequest(activeRide.id);
+            }}
+          >
+            <XCircle className="w-3.5 h-3.5" />
+            <span>Cancel Ride Request</span>
+          </button>
+        </div>
+      )}
+
+      {/* 2. REJECTED / DECLINED RIDE CARD */}
+      {activeRide && activeRide.status === 'rejected' && (
+        <div className="p-4 bg-rose-950/60 border-2 border-rose-600/70 rounded-2xl shadow-xl backdrop-blur-md space-y-2.5">
+          <div className="flex items-center gap-2 text-rose-300 font-extrabold text-xs uppercase tracking-wider">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>Booking Unable to be Accommodated</span>
+          </div>
+          <p className="text-xs text-rose-200/90 leading-relaxed">
+            {activeRide.rejectionReason || 'Driver unable to accept ride due to capacity or detour constraints.'}
+          </p>
+          <button
+            className="w-full py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 transition-colors"
+            onClick={() => setActiveRideId(null)}
+          >
+            Dismiss & Try Another Station
+          </button>
+        </div>
+      )}
+
+      {/* 3. CONFIRMED ACTIVE RIDE / BOARDING PASS */}
+      {activeRide && (activeRide.status === 'waiting' || activeRide.status === 'assigned' || activeRide.status === 'onboard') && (
+        <div className="p-4 bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border-2 border-emerald-500/60 rounded-2xl shadow-xl backdrop-blur-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
 
           <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
             <div className="flex items-center gap-2">
-              <Bus className="w-4 h-4 text-orange-400 animate-bounce" />
-              <span className="font-extrabold text-xs tracking-wider text-white uppercase">
-                {activeRide.status === 'onboard' ? '🚀 RIDE IN PROGRESS' : '🚐 SHUTTLE EN-ROUTE'}
+              <Bus className="w-4 h-4 text-emerald-400 animate-bounce" />
+              <span className="font-extrabold text-xs tracking-wider text-emerald-300 uppercase">
+                {activeRide.status === 'onboard' ? '🚀 RIDE IN PROGRESS' : '🚐 BUS ASSIGNED & EN-ROUTE'}
               </span>
             </div>
-            <span className={`status-pill ${activeRide.status}`}>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
               {activeRide.status.toUpperCase()}
             </span>
           </div>
 
           <div className="space-y-2 mb-3 text-xs">
             <div className="flex items-center justify-between text-slate-300">
-              <span className="text-slate-400 font-medium">Assigned Shuttle:</span>
+              <span className="text-slate-400 font-medium">Assigned Bus:</span>
               <span className="font-extrabold text-sky-400 text-sm">
-                {activeRide.vehicleId ? `Shuttle ${activeRide.vehicleId}` : 'Dispatching...'}
+                {activeRide.vehicleId ? `Bus ${activeRide.vehicleId}` : 'Dispatching...'}
               </span>
             </div>
             {assignedVehicle && (
@@ -158,21 +232,19 @@ export default function StudentRiderView({
             )}
             <div className="flex items-center justify-between text-slate-300">
               <span className="text-slate-400 font-medium">Pickup Station:</span>
-              <span className="font-bold text-emerald-400">{activeRide.pickup}</span>
+              <span className="font-bold text-emerald-400">{nodeMap.get(activeRide.pickup) || activeRide.pickup}</span>
             </div>
             <div className="flex items-center justify-between text-slate-300">
-              <span className="text-slate-400 font-medium">Dropoff Station:</span>
-              <span className="font-bold text-orange-400">{activeRide.dropoff}</span>
+              <span className="text-slate-400 font-medium">Dropoff Destination:</span>
+              <span className="font-bold text-orange-400">{nodeMap.get(activeRide.dropoff) || activeRide.dropoff}</span>
             </div>
           </div>
 
-          {/* Guarantee Badge */}
           <div className="flex items-center gap-2 p-2 rounded-xl bg-sky-950/40 border border-sky-800/40 text-[11px] text-sky-300 mb-3">
             <ShieldCheck className="w-4 h-4 shrink-0 text-sky-400" />
             <span><strong>Detour Bound Active:</strong> Guaranteed max ride delay within 1.5x direct duration.</span>
           </div>
 
-          {/* Cancel button if waiting or assigned */}
           {(activeRide.status === 'waiting' || activeRide.status === 'assigned') && (
             <button
               className="w-full py-2 rounded-xl text-xs font-bold text-rose-400 bg-rose-950/40 border border-rose-800/50 hover:bg-rose-900/50 transition-colors flex items-center justify-center gap-1.5"
@@ -186,33 +258,73 @@ export default function StudentRiderView({
             </button>
           )}
         </div>
-      ) : null}
+      )}
 
-      {/* Booking Form Card */}
-      <div className="p-4 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl backdrop-blur-md">
-        <div className="flex items-center justify-between mb-3">
+      {/* 4. BOOKING FORM CARD */}
+      <div className="p-4 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl backdrop-blur-md space-y-3.5">
+        <div className="flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold tracking-wider text-orange-400 uppercase block">⚡ GU RAPIDO DISPATCH</span>
-            <h3 className="font-extrabold text-sm text-white">Book a Campus Shuttle</h3>
+            <h3 className="font-extrabold text-sm text-white">Book a Ride</h3>
           </div>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
             Pool Enabled
           </span>
         </div>
 
+        {/* 🗺️ REGIONAL SERVICE ZONE SELECTOR: INSIDE CAMPUS VS ANYWHERE IN HARYANA */}
+        <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
+          <button
+            type="button"
+            className={`py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+              region === 'campus'
+                ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
+                : 'text-slate-400 hover:text-white'
+            }`}
+            onClick={() => {
+              if (soundEnabled) playSound('click');
+              setRegion('campus');
+            }}
+          >
+            <Building className="w-3.5 h-3.5" />
+            <span>Inside Campus</span>
+          </button>
+
+          <button
+            type="button"
+            className={`py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+              region === 'haryana'
+                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30'
+                : 'text-slate-400 hover:text-white'
+            }`}
+            onClick={() => {
+              if (soundEnabled) playSound('click');
+              setRegion('haryana');
+            }}
+          >
+            <MapIcon className="w-3.5 h-3.5" />
+            <span>Anywhere Haryana</span>
+          </button>
+        </div>
+
         <form onSubmit={handleBook} className="space-y-3">
           {/* Pickup Station */}
           <div className="space-y-1">
-            <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              PICKUP STATION
+            <label className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                PICKUP STATION
+              </span>
+              <span className="text-[10px] text-slate-500 uppercase">
+                {region === 'campus' ? 'Campus Stops' : 'Haryana Cities & Hubs'}
+              </span>
             </label>
             <select
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-orange-500"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-orange-500 cursor-pointer"
               value={pickup}
               onChange={e => setPickup(e.target.value)}
             >
-              {nodes.map(n => (
+              {activeNodes.map(n => (
                 <option key={n.id} value={n.id}>{n.name}</option>
               ))}
             </select>
@@ -232,16 +344,21 @@ export default function StudentRiderView({
 
           {/* Dropoff Destination */}
           <div className="space-y-1">
-            <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-orange-400"></span>
-              DROPOFF DESTINATION
+            <label className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-orange-400"></span>
+                DROPOFF DESTINATION
+              </span>
+              <span className="text-[10px] text-slate-500 uppercase">
+                {region === 'campus' ? 'Campus Stops' : 'Haryana Cities & Hubs'}
+              </span>
             </label>
             <select
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-orange-500"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-orange-500 cursor-pointer"
               value={dropoff}
               onChange={e => setDropoff(e.target.value)}
             >
-              {nodes.map(n => (
+              {activeNodes.map(n => (
                 <option key={n.id} value={n.id}>{n.name}</option>
               ))}
             </select>
@@ -262,7 +379,7 @@ export default function StudentRiderView({
             >
               <div className="flex items-center justify-between text-xs font-bold mb-0.5">
                 <span>⚡ Shared Pool</span>
-                <span className="text-[10px] text-orange-400">10 pts</span>
+                <span className="text-[10px] text-orange-400">{region === 'haryana' ? '25 pts' : '10 pts'}</span>
               </div>
               <p className="text-[10px] text-slate-400 leading-tight">
                 Smart dynamic pooling • 1.5x detour bound
@@ -282,7 +399,7 @@ export default function StudentRiderView({
             >
               <div className="flex items-center justify-between text-xs font-bold mb-0.5">
                 <span>🚀 Solo Direct</span>
-                <span className="text-[10px] text-sky-400">25 pts</span>
+                <span className="text-[10px] text-sky-400">{region === 'haryana' ? '60 pts' : '25 pts'}</span>
               </div>
               <p className="text-[10px] text-slate-400 leading-tight">
                 Direct unshared trip • Zero detour
@@ -314,7 +431,7 @@ export default function StudentRiderView({
             className="w-full py-2.5 rounded-xl font-extrabold text-xs text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-2"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Confirm & Request Campus Shuttle</span>
+            <span>Confirm & Request Ride</span>
           </button>
         </form>
       </div>
