@@ -75,4 +75,30 @@ test('Driver Acceptance & Regional Haryana Workflow', async (t) => {
     assert.ok(declinedInState, 'Declined request must be present in state with rejected status');
     assert.strictEqual(declinedInState.status, 'rejected');
   });
+
+  await t.test('Cross-boundary routing: Campus to Outside City and Outside City to Campus', () => {
+    // 1. Campus to Outside City (N01 North Gate -> H01 Panipat Junction)
+    const campusToOutside = simManager.addRequest({
+      pickup: 'N01',
+      dropoff: 'H01',
+      passengers: 1,
+      windowMin: 20,
+      maxDetourFactor: 1.5,
+      riderName: 'Campus To Outside Rider',
+      autoAccept: true
+    });
+    assert.strictEqual(campusToOutside.status, 'assigned', 'Campus to Outside City booking should be feasible and assigned');
+
+    // 2. Outside City to Campus (H04 Karnal Oasis -> N14 Academic Megablock)
+    const outsideToCampus = simManager.addRequest({
+      pickup: 'H04',
+      dropoff: 'N14',
+      passengers: 1,
+      windowMin: 25,
+      maxDetourFactor: 1.5,
+      riderName: 'Outside To Campus Rider',
+      autoAccept: true
+    });
+    assert.ok(['assigned', 'waiting'].includes(outsideToCampus.status), 'Outside City to Campus booking should be supported');
+  });
 });

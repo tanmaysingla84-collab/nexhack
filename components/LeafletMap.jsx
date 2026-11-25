@@ -58,22 +58,21 @@ export default function LeafletMap({
   const stopMarkersRef = useRef([]);
   const waitingMarkersRef = useRef([]);
   const initialBoundsFittedRef = useRef(false);
+  const hasAutoFittedPlacedRideRef = useRef(null);
 
-  // Initialize Map with Strict Campus Bounds
+  // Initialize Map with Flexible Regional Bounds
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
     const campusBounds = L.latLngBounds(GEETA_CAMPUS_BOUNDS);
 
-    // Centered at Geeta University with strict spatial locking
+    // Centered at Geeta University with full regional Haryana zoom capability
     const map = L.map(mapContainerRef.current, {
       zoomControl: false, // Replaced with custom recenter & zoom control
       attributionControl: true,
-      minZoom: 16.5,     // Hard limit: NEVER zoom out outside university campus land
-      maxZoom: 19,       // High-detail building level
-      maxBounds: campusBounds,
-      maxBoundsViscosity: 1.0 // 100% boundary resistance: physically impossible to drag outside campus
-    }).setView([29.3051, 76.8940], 17.5);
+      minZoom: 7,         // Allows zooming out to view all of Haryana, Delhi-NCR & North India
+      maxZoom: 19         // High-detail building level
+    }).setView([29.3051, 76.8940], 17);
 
     // 1. OpenStreetMap Standard tile layer (100% free, crisp, zero watermark, zero API key)
     const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -118,7 +117,7 @@ export default function LeafletMap({
     };
     L.control.layers(baseMaps, overlayMaps, { position: 'topright' }).addTo(map);
 
-    // Custom Navigation Control (Zoom in, Zoom out, Recenter Campus)
+    // Custom Navigation Control (Zoom in, Zoom out, Recenter Campus, Full Regional Network)
     const navControl = L.control({ position: 'topleft' });
     navControl.onAdd = function() {
       const div = L.DomUtil.create('div', 'leaflet-bar campus-nav-controls');
@@ -126,6 +125,7 @@ export default function LeafletMap({
         <a href="#" role="button" title="Zoom in" class="campus-ctrl-btn" id="ctrl-zoom-in">+</a>
         <a href="#" role="button" title="Zoom out" class="campus-ctrl-btn" id="ctrl-zoom-out">&minus;</a>
         <a href="#" role="button" title="Recenter on Geeta University Campus" class="campus-ctrl-btn campus-recenter-btn" id="ctrl-recenter">🎯</a>
+        <a href="#" role="button" title="View Full Haryana Regional Network" class="campus-ctrl-btn campus-regional-btn" id="ctrl-regional">🗺️</a>
       `;
       L.DomEvent.disableClickPropagation(div);
       return div;
@@ -139,11 +139,22 @@ export default function LeafletMap({
       e.preventDefault();
       map.fitBounds(campusBounds, { padding: [25, 25], animate: true });
     };
+    const handleRegional = (e) => {
+      e.preventDefault();
+      const nodes = state?.nodes || [];
+      if (nodes.length > 0) {
+        const coords = nodes.map(n => [n.lat, n.lng]);
+        map.fitBounds(L.latLngBounds(coords), { padding: [30, 30], animate: true });
+      } else {
+        map.setView([29.35, 76.85], 9, { animate: true });
+      }
+    };
 
     setTimeout(() => {
       document.getElementById('ctrl-zoom-in')?.addEventListener('click', handleZoomIn);
       document.getElementById('ctrl-zoom-out')?.addEventListener('click', handleZoomOut);
       document.getElementById('ctrl-recenter')?.addEventListener('click', handleRecenter);
+      document.getElementById('ctrl-regional')?.addEventListener('click', handleRegional);
       map.fitBounds(campusBounds, { padding: [25, 25] });
       map.invalidateSize();
     }, 150);
@@ -159,6 +170,7 @@ export default function LeafletMap({
       document.getElementById('ctrl-zoom-in')?.removeEventListener('click', handleZoomIn);
       document.getElementById('ctrl-zoom-out')?.removeEventListener('click', handleZoomOut);
       document.getElementById('ctrl-recenter')?.removeEventListener('click', handleRecenter);
+      document.getElementById('ctrl-regional')?.removeEventListener('click', handleRegional);
       resizeObserver.disconnect();
       map.remove();
       mapRef.current = null;
@@ -368,6 +380,12 @@ export default function LeafletMap({
           }
 
           if (ridePathCoords.length > 1) {
+            // Auto-frame map to show both ends of the booked journey
+            if (hasAutoFittedPlacedRideRef.current !== activeRide.id) {
+              map.fitBounds(L.latLngBounds(ridePathCoords), { padding: [40, 40], maxZoom: 16 });
+              hasAutoFittedPlacedRideRef.current = activeRide.id;
+            }
+
             // High-visibility glowing orange polyline ONLY for this placed ride
             const glowPoly = L.polyline(ridePathCoords, {
               color: '#f97316',

@@ -17,7 +17,8 @@ import {
   Compass,
   Radio,
   Building,
-  Map as MapIcon
+  Map as MapIcon,
+  ArrowRight
 } from 'lucide-react';
 import { playSound } from './AudioEffects';
 
@@ -32,9 +33,8 @@ export default function StudentRiderView({
   activeRideId: externalActiveRideId,
   onRidePlaced
 }) {
-  const [region, setRegion] = useState('campus'); // 'campus' | 'haryana'
   const [pickup, setPickup] = useState('N07');
-  const [dropoff, setDropoff] = useState('N16');
+  const [dropoff, setDropoff] = useState('H01');
   const [rideType, setRideType] = useState('pool'); // 'pool' | 'solo'
   const [passengers, setPassengers] = useState(1);
   const [activeRideId, setActiveRideId] = useState(externalActiveRideId || null);
@@ -48,22 +48,32 @@ export default function StudentRiderView({
   // Separate stations by region
   const campusNodes = nodes.filter(n => n.region === 'campus' || (!n.region && !n.id.startsWith('H')));
   const haryanaNodes = nodes.filter(n => n.region === 'haryana' || n.id.startsWith('H'));
-  const activeNodes = region === 'campus' ? campusNodes : haryanaNodes;
 
-  // When region changes or nodes load, update pickup and dropoff to match region
-  useEffect(() => {
-    if (activeNodes.length > 0) {
-      const currentPickupValid = activeNodes.some(n => n.id === pickup);
-      const currentDropoffValid = activeNodes.some(n => n.id === dropoff);
+  // Route characteristics
+  const isPickupCampus = !pickup.startsWith('H');
+  const isDropoffCampus = !dropoff.startsWith('H');
 
-      if (!currentPickupValid) {
-        setPickup(activeNodes[0].id);
-      }
-      if (!currentDropoffValid) {
-        setDropoff(activeNodes.length > 1 ? activeNodes[1].id : activeNodes[0].id);
-      }
-    }
-  }, [region, nodes]);
+  let routeCategoryLabel = '🏫 Inside Campus Shuttle';
+  let routeBadgeBg = 'bg-orange-500/20 text-orange-300 border-orange-500/30';
+  let poolPoints = '2 pts';
+  let soloPoints = '5 pts';
+
+  if (isPickupCampus && !isDropoffCampus) {
+    routeCategoryLabel = '🏫 Campus ➔ 🏙️ Outside City Transit';
+    routeBadgeBg = 'bg-sky-500/20 text-sky-300 border-sky-500/30';
+    poolPoints = '5 pts';
+    soloPoints = '10 pts';
+  } else if (!isPickupCampus && isDropoffCampus) {
+    routeCategoryLabel = '🏙️ Outside City ➔ 🏫 Campus Shuttle';
+    routeBadgeBg = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+    poolPoints = '5 pts';
+    soloPoints = '10 pts';
+  } else if (!isPickupCampus && !isDropoffCampus) {
+    routeCategoryLabel = '🏙️ Haryana Regional Inter-City';
+    routeBadgeBg = 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+    poolPoints = '5 pts';
+    soloPoints = '10 pts';
+  }
 
   // Find user's active ride (including pending driver approval)
   const currentRideId = externalActiveRideId || activeRideId;
@@ -85,15 +95,17 @@ export default function StudentRiderView({
 
     if (soundEnabled) playSound('success');
 
+    const isCrossOrRegional = !isPickupCampus || !isDropoffCampus;
+
     const result = await onAddRequest({
       pickup,
       dropoff,
       passengers: parseInt(passengers, 10),
-      windowMin: region === 'haryana' ? 20 : 10,
+      windowMin: isCrossOrRegional ? 20 : 10,
       maxDetourFactor: rideType === 'pool' ? 1.5 : 1.0,
       riderName: currentUser?.name || 'Aarav Sharma',
       studentId: currentUser?.id || 'GU24-CSE-1042',
-      region
+      region: isCrossOrRegional ? 'haryana' : 'campus'
     });
 
     if (result?.requestId) {
@@ -107,6 +119,23 @@ export default function StudentRiderView({
     const temp = pickup;
     setPickup(dropoff);
     setDropoff(temp);
+  };
+
+  const setRoutePreset = (preset) => {
+    if (soundEnabled) playSound('click');
+    if (preset === 'campus_to_outside') {
+      setPickup(campusNodes[0]?.id || 'N01');
+      setDropoff(haryanaNodes[0]?.id || 'H01');
+    } else if (preset === 'outside_to_campus') {
+      setPickup(haryanaNodes[0]?.id || 'H01');
+      setDropoff(campusNodes[6]?.id || 'N07');
+    } else if (preset === 'inside_campus') {
+      setPickup(campusNodes[6]?.id || 'N07');
+      setDropoff(campusNodes[11]?.id || 'N16');
+    } else if (preset === 'outside_cities') {
+      setPickup(haryanaNodes[0]?.id || 'H01');
+      setDropoff(haryanaNodes[2]?.id || 'H03');
+    }
   };
 
   const assignedVehicle = activeRide?.vehicleId
@@ -161,9 +190,12 @@ export default function StudentRiderView({
               <span className="font-bold text-orange-400">{nodeMap.get(activeRide.dropoff) || activeRide.dropoff}</span>
             </div>
             <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-800">
-              <span className="text-slate-400">Service Zone:</span>
+              <span className="text-slate-400">Service Route:</span>
               <span className="font-semibold text-sky-400">
-                {activeRide.pickup?.startsWith('H') || activeRide.dropoff?.startsWith('H') ? '🏙️ Outside Cities (Haryana)' : '🏫 Inside Cities'}
+                {!activeRide.pickup?.startsWith('H') && activeRide.dropoff?.startsWith('H') && '🏫 Campus ➔ 🏙️ Outside City'}
+                {activeRide.pickup?.startsWith('H') && !activeRide.dropoff?.startsWith('H') && '🏙️ Outside City ➔ 🏫 Campus'}
+                {!activeRide.pickup?.startsWith('H') && !activeRide.dropoff?.startsWith('H') && '🏫 Inside Campus Shuttle'}
+                {activeRide.pickup?.startsWith('H') && activeRide.dropoff?.startsWith('H') && '🏙️ Outside Cities Inter-City'}
               </span>
             </div>
           </div>
@@ -272,51 +304,76 @@ export default function StudentRiderView({
           </span>
         </div>
 
-        {/* 🗺️ REGIONAL SERVICE ZONE SELECTOR: INSIDE CITIES VS OUTSIDE CITIES */}
-        <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
-          <button
-            type="button"
-            className={`py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
-              region === 'campus'
-                ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            onClick={() => {
-              if (soundEnabled) playSound('click');
-              setRegion('campus');
-            }}
-          >
-            <Building className="w-3.5 h-3.5" />
-            <span>Inside Cities</span>
-          </button>
+        {/* 4 QUICK ROUTE DIRECTION PRESETS */}
+        <div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+            Quick Route Directions
+          </span>
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              className={`py-2 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1 border ${
+                isPickupCampus && !isDropoffCampus
+                  ? 'bg-sky-500 text-white border-sky-400 shadow-md shadow-sky-500/25'
+                  : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+              }`}
+              onClick={() => setRoutePreset('campus_to_outside')}
+            >
+              <span>🏫 Campus</span>
+              <ArrowRight className="w-3 h-3 text-sky-300" />
+              <span>🏙️ Outside</span>
+            </button>
 
-          <button
-            type="button"
-            className={`py-2 px-2.5 rounded-lg text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
-              region === 'haryana'
-                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            onClick={() => {
-              if (soundEnabled) playSound('click');
-              setRegion('haryana');
-            }}
-          >
-            <MapIcon className="w-3.5 h-3.5" />
-            <span>Outside Cities</span>
-          </button>
+            <button
+              type="button"
+              className={`py-2 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1 border ${
+                !isPickupCampus && isDropoffCampus
+                  ? 'bg-emerald-600 text-white border-emerald-400 shadow-md shadow-emerald-600/25'
+                  : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+              }`}
+              onClick={() => setRoutePreset('outside_to_campus')}
+            >
+              <span>🏙️ Outside</span>
+              <ArrowRight className="w-3 h-3 text-emerald-300" />
+              <span>🏫 Campus</span>
+            </button>
+
+            <button
+              type="button"
+              className={`py-2 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1 border ${
+                isPickupCampus && isDropoffCampus
+                  ? 'bg-orange-500 text-white border-orange-400 shadow-md shadow-orange-500/25'
+                  : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+              }`}
+              onClick={() => setRoutePreset('inside_campus')}
+            >
+              <span>🏫 Inside Campus</span>
+            </button>
+
+            <button
+              type="button"
+              className={`py-2 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1 border ${
+                !isPickupCampus && !isDropoffCampus
+                  ? 'bg-purple-600 text-white border-purple-400 shadow-md shadow-purple-600/25'
+                  : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+              }`}
+              onClick={() => setRoutePreset('outside_cities')}
+            >
+              <span>🏙️ Outside Cities</span>
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleBook} className="space-y-3">
-          {/* Pickup Station */}
+          {/* Pickup Station (Supports BOTH Campus & Outside Cities) */}
           <div className="space-y-1">
             <label className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                 PICKUP STATION
               </span>
-              <span className="text-[10px] text-slate-500 uppercase">
-                {region === 'campus' ? 'Inside Cities & Campus Stops' : 'Outside Cities (Haryana)'}
+              <span className="text-[10px] text-slate-500">
+                {isPickupCampus ? '🏫 Inside Campus' : '🏙️ Outside City'}
               </span>
             </label>
             <select
@@ -324,9 +381,16 @@ export default function StudentRiderView({
               value={pickup}
               onChange={e => setPickup(e.target.value)}
             >
-              {activeNodes.map(n => (
-                <option key={n.id} value={n.id}>{n.name}</option>
-              ))}
+              <optgroup label="🏫 Inside Campus Stations">
+                {campusNodes.map(n => (
+                  <option key={n.id} value={n.id}>{n.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="🏙️ Outside Haryana Cities">
+                {haryanaNodes.map(n => (
+                  <option key={n.id} value={n.id}>{n.name}</option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
@@ -342,15 +406,15 @@ export default function StudentRiderView({
             </button>
           </div>
 
-          {/* Dropoff Destination */}
+          {/* Dropoff Destination (Supports BOTH Campus & Outside Cities) */}
           <div className="space-y-1">
             <label className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-orange-400"></span>
                 DROPOFF DESTINATION
               </span>
-              <span className="text-[10px] text-slate-500 uppercase">
-                {region === 'campus' ? 'Inside Cities & Campus Stops' : 'Outside Cities (Haryana)'}
+              <span className="text-[10px] text-slate-500">
+                {isDropoffCampus ? '🏫 Inside Campus' : '🏙️ Outside City'}
               </span>
             </label>
             <select
@@ -358,14 +422,27 @@ export default function StudentRiderView({
               value={dropoff}
               onChange={e => setDropoff(e.target.value)}
             >
-              {activeNodes.map(n => (
-                <option key={n.id} value={n.id}>{n.name}</option>
-              ))}
+              <optgroup label="🏫 Inside Campus Stations">
+                {campusNodes.map(n => (
+                  <option key={n.id} value={n.id}>{n.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="🏙️ Outside Haryana Cities">
+                {haryanaNodes.map(n => (
+                  <option key={n.id} value={n.id}>{n.name}</option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
+          {/* Dynamic Route Category Pill */}
+          <div className={`p-2 rounded-xl border text-xs font-extrabold flex items-center justify-between ${routeBadgeBg}`}>
+            <span>{routeCategoryLabel}</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider">Direct & Pooled</span>
+          </div>
+
           {/* Ride Mode Selector (Shared Pool vs Solo Direct) */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="grid grid-cols-2 gap-2 pt-0.5">
             <div
               className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
                 rideType === 'pool'
@@ -379,7 +456,7 @@ export default function StudentRiderView({
             >
               <div className="flex items-center justify-between text-xs font-bold mb-0.5">
                 <span>⚡ Shared Pool</span>
-                <span className="text-[10px] text-orange-400 font-extrabold">{region === 'haryana' ? '5 pts' : '2 pts'}</span>
+                <span className="text-[10px] text-orange-400 font-extrabold">{poolPoints}</span>
               </div>
               <p className="text-[10px] text-slate-400 leading-tight">
                 Smart dynamic pooling • 1.5x detour bound
@@ -399,7 +476,7 @@ export default function StudentRiderView({
             >
               <div className="flex items-center justify-between text-xs font-bold mb-0.5">
                 <span>🚀 Solo Direct</span>
-                <span className="text-[10px] text-sky-400 font-extrabold">{region === 'haryana' ? '10 pts' : '5 pts'}</span>
+                <span className="text-[10px] text-sky-400 font-extrabold">{soloPoints}</span>
               </div>
               <p className="text-[10px] text-slate-400 leading-tight">
                 Direct unshared trip • Zero detour
