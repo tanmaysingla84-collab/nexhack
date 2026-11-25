@@ -254,23 +254,80 @@ export default function LeafletMap({
       );
     }
 
-    // 2. Campus Blueprint Nodes
+    // 2. Campus Blueprint Nodes (Names hidden by default; ONLY shown for the booked ride's stations)
+    const bookedPickupId = activeRide?.pickup;
+    const bookedDropoffId = activeRide?.dropoff;
+    const isRideActive = Boolean(activeRide && ['pending_driver', 'waiting', 'assigned', 'onboard'].includes(activeRide.status));
+
     for (const node of nodes) {
-      if (!nodeMarkersRef.current.has(node.id)) {
-        const iconChar = nodeIcons[node.type] || '📍';
-        const customIcon = L.divIcon({
-          className: 'custom-node-icon',
-          html: `
-            <div class="node-pin ${node.type}">
+      const isBookedPickup = isRideActive && bookedPickupId === node.id;
+      const isBookedDropoff = isRideActive && bookedDropoffId === node.id;
+      const isBookedStation = isBookedPickup || isBookedDropoff;
+
+      const iconChar = nodeIcons[node.type] || '📍';
+
+      let html = '';
+      let iconSize = [28, 28];
+      let iconAnchor = [14, 14];
+
+      if (isBookedStation) {
+        // ONLY show station name for the booked ride
+        const badgeTag = isBookedPickup ? 'PICKUP' : 'DROPOFF';
+        const badgeColor = isBookedPickup ? '#10b981' : '#f97316';
+        const badgeGlow = isBookedPickup ? 'rgba(16,185,129,0.9)' : 'rgba(249,115,22,0.9)';
+
+        html = `
+          <div style="display:flex; flex-direction:column; align-items:center; pointer-events:auto;">
+            <div class="node-pin ${node.type}" style="width:32px; height:32px; border:2.5px solid ${badgeColor}; box-shadow:0 0 16px ${badgeGlow}; transform:scale(1.15);">
               ${iconChar}
             </div>
-            <div class="node-label">${node.name}</div>
-          `,
-          iconSize: [110, 42],
-          iconAnchor: [55, 16]
-        });
+            <div style="
+              margin-top: 4px;
+              background: rgba(15, 23, 42, 0.96);
+              border: 1.5px solid ${badgeColor};
+              border-radius: 9999px;
+              padding: 2px 10px;
+              color: #ffffff;
+              font-size: 11px;
+              font-weight: 800;
+              box-shadow: 0 4px 14px rgba(0,0,0,0.8), 0 0 14px ${badgeGlow};
+              white-space: nowrap;
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              pointer-events: none;
+            ">
+              <span style="background:${badgeColor}; color:#fff; font-size:9px; font-weight:900; padding:1px 6px; border-radius:9999px;">${badgeTag}</span>
+              <span style="font-weight:700;">${node.name}</span>
+            </div>
+          </div>
+        `;
+        iconSize = [240, 56];
+        iconAnchor = [120, 16];
+      } else {
+        // Normal station: CLEAN PIN ONLY - NO floating name label to prevent map clutter
+        html = `
+          <div class="node-pin ${node.type}" title="${node.name}">
+            ${iconChar}
+          </div>
+        `;
+        iconSize = [28, 28];
+        iconAnchor = [14, 14];
+      }
 
-        const marker = L.marker([node.lat, node.lng], { icon: customIcon }).addTo(map);
+      const customIcon = L.divIcon({
+        className: 'custom-node-icon',
+        html,
+        iconSize,
+        iconAnchor
+      });
+
+      if (!nodeMarkersRef.current.has(node.id)) {
+        const marker = L.marker([node.lat, node.lng], {
+          icon: customIcon,
+          zIndexOffset: isBookedStation ? 1500 : 100
+        }).addTo(map);
+
         marker.on('click', () => {
           if (onNodeClick) onNodeClick(node);
         });
@@ -280,6 +337,8 @@ export default function LeafletMap({
       } else {
         const marker = nodeMarkersRef.current.get(node.id);
         marker.setLatLng([node.lat, node.lng]);
+        marker.setIcon(customIcon);
+        marker.setZIndexOffset(isBookedStation ? 1500 : 100);
       }
     }
 
@@ -358,92 +417,52 @@ export default function LeafletMap({
     stopMarkersRef.current = [];
 
     if (userRole === 'student') {
-      // REQUIREMENT: Show route ONLY when ride gets booked, and route ONLY for that placed ride
-      if (activeRide && activeRide.vehicleId) {
-        const assignedVeh = vehicles.find(v => v.id === activeRide.vehicleId);
-        if (assignedVeh && assignedVeh.status !== 'broken') {
-          const pickupPos = nodeCoords.get(activeRide.pickup);
-          const dropoffPos = nodeCoords.get(activeRide.dropoff);
-          const vehPos = assignedVeh.position ? [assignedVeh.position.lat, assignedVeh.position.lng] : null;
+      // REQUIREMENT: Show route ONLY when ride gets booked/requested, and route ONLY for that placed ride
+      if (isRideActive && activeRide) {
+        const pickupPos = nodeCoords.get(activeRide.pickup);
+        const dropoffPos = nodeCoords.get(activeRide.dropoff);
+        const assignedVeh = activeRide.vehicleId ? vehicles.find(v => v.id === activeRide.vehicleId && v.status !== 'broken') : null;
+        const vehPos = assignedVeh?.position ? [assignedVeh.position.lat, assignedVeh.position.lng] : null;
 
-          const ridePathCoords = [];
-          if (vehPos) ridePathCoords.push(vehPos);
+        const ridePathCoords = [];
+        if (vehPos) ridePathCoords.push(vehPos);
 
-          if (assignedVeh.route && assignedVeh.route.length > 0) {
-            for (const nodeId of assignedVeh.route) {
-              const latLng = nodeCoords.get(nodeId);
-              if (latLng) ridePathCoords.push(latLng);
-            }
-          } else {
-            if (pickupPos && activeRide.status !== 'onboard') ridePathCoords.push(pickupPos);
-            if (dropoffPos) ridePathCoords.push(dropoffPos);
+        if (assignedVeh?.route && assignedVeh.route.length > 0) {
+          for (const nodeId of assignedVeh.route) {
+            const latLng = nodeCoords.get(nodeId);
+            if (latLng) ridePathCoords.push(latLng);
           }
-
-          if (ridePathCoords.length > 1) {
-            // Auto-frame map to show both ends of the booked journey
-            if (hasAutoFittedPlacedRideRef.current !== activeRide.id) {
-              map.fitBounds(L.latLngBounds(ridePathCoords), { padding: [40, 40], maxZoom: 16 });
-              hasAutoFittedPlacedRideRef.current = activeRide.id;
-            }
-
-            // High-visibility glowing orange polyline ONLY for this placed ride
-            const glowPoly = L.polyline(ridePathCoords, {
-              color: '#f97316',
-              weight: 9,
-              opacity: 0.4
-            }).addTo(map);
-
-            const corePoly = L.polyline(ridePathCoords, {
-              color: '#f97316',
-              weight: 4.5,
-              opacity: 1.0,
-              dashArray: '8, 8'
-            }).addTo(map);
-
-            routePolylinesRef.current.set(`placed-ride-glow`, glowPoly);
-            routePolylinesRef.current.set(`placed-ride-core`, corePoly);
-          }
-
-          // Dedicated Pickup Marker for this placed ride
-          if (pickupPos) {
-            const pickupIcon = L.divIcon({
-              className: 'custom-placed-pickup-pin',
-              html: `
-                <div style="background:#10b981; color:#ffffff; border:2px solid #ffffff; border-radius:9999px; padding:3px 9px; font-size:11px; font-weight:800; display:flex; align-items:center; gap:4px; box-shadow:0 0 16px rgba(16,185,129,0.9); white-space:nowrap;">
-                  <span>🟢 YOUR PICKUP</span>
-                </div>
-              `,
-              iconSize: [115, 26],
-              iconAnchor: [57, 13]
-            });
-            const pMarker = L.marker(pickupPos, { icon: pickupIcon, zIndexOffset: 1200 }).addTo(map);
-            pMarker.bindTooltip(`<b>Your Pickup:</b> ${activeRide.pickup}`, { permanent: true, direction: 'top' });
-            stopMarkersRef.current.push(pMarker);
-          }
-
-          // Dedicated Dropoff Marker for this placed ride
-          if (dropoffPos) {
-            const dropoffIcon = L.divIcon({
-              className: 'custom-placed-dropoff-pin',
-              html: `
-                <div style="background:#f97316; color:#ffffff; border:2px solid #ffffff; border-radius:9999px; padding:3px 9px; font-size:11px; font-weight:800; display:flex; align-items:center; gap:4px; box-shadow:0 0 16px rgba(249,115,22,0.9); white-space:nowrap;">
-                  <span>🏁 YOUR DROPOFF</span>
-                </div>
-              `,
-              iconSize: [125, 26],
-              iconAnchor: [62, 13]
-            });
-            const dMarker = L.marker(dropoffPos, { icon: dropoffIcon, zIndexOffset: 1200 }).addTo(map);
-            dMarker.bindTooltip(`<b>Your Dropoff:</b> ${activeRide.dropoff}`, { permanent: true, direction: 'bottom' });
-            stopMarkersRef.current.push(dMarker);
-          }
-
-          // Automatically focus map on user's active ride
-          if (pickupPos && dropoffPos) {
-            const tripBounds = L.latLngBounds([pickupPos, dropoffPos, ...(vehPos ? [vehPos] : [])]);
-            map.fitBounds(tripBounds, { padding: [55, 55], maxZoom: 18, animate: true });
-          }
+        } else {
+          if (pickupPos && activeRide.status !== 'onboard') ridePathCoords.push(pickupPos);
+          if (dropoffPos) ridePathCoords.push(dropoffPos);
         }
+
+        if (ridePathCoords.length > 1) {
+          // Auto-frame map to show both ends of the booked journey
+          if (hasAutoFittedPlacedRideRef.current !== activeRide.id) {
+            map.fitBounds(L.latLngBounds(ridePathCoords), { padding: [40, 40], maxZoom: 16 });
+            hasAutoFittedPlacedRideRef.current = activeRide.id;
+          }
+
+          // High-visibility glowing orange polyline ONLY for this placed ride
+          const glowPoly = L.polyline(ridePathCoords, {
+            color: '#f97316',
+            weight: 9,
+            opacity: 0.4
+          }).addTo(map);
+
+          const corePoly = L.polyline(ridePathCoords, {
+            color: '#f97316',
+            weight: 4.5,
+            opacity: 1.0,
+            dashArray: '8, 8'
+          }).addTo(map);
+
+          routePolylinesRef.current.set(`placed-ride-glow`, glowPoly);
+          routePolylinesRef.current.set(`placed-ride-core`, corePoly);
+        }
+      } else {
+        hasAutoFittedPlacedRideRef.current = null;
       }
       // When NO ride is booked, routes remain completely clean and empty!
     } else {

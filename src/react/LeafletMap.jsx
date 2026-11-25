@@ -125,13 +125,12 @@ export default function LeafletMap({
         const customIcon = L.divIcon({
           className: 'custom-node-icon',
           html: `
-            <div class="node-pin ${node.type}">
+            <div class="node-pin ${node.type}" title="${node.name}">
               ${iconChar}
             </div>
-            <div class="node-label">${node.name}</div>
           `,
-          iconSize: [110, 42],
-          iconAnchor: [55, 16]
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
         });
 
         const marker = L.marker([node.lat, node.lng], { icon: customIcon }).addTo(map);
