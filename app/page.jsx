@@ -411,8 +411,8 @@ export default function CampusPoolPage() {
     (r.id === studentActiveRideId ||
      (currentUser?.user?.name && r.riderName?.toLowerCase().includes(currentUser.user.name.toLowerCase())) ||
      (currentUser?.user?.id && r.studentId === currentUser.user.id)) &&
-    ['pending_driver', 'waiting', 'assigned', 'onboard'].includes(r.status)
-  ) || (studentActiveRideId ? (simState?.requests || []).find(r => r.id === studentActiveRideId && ['pending_driver', 'waiting', 'assigned', 'onboard', 'rejected'].includes(r.status)) : null);
+    ['pending_driver', 'waiting', 'assigned', 'onboard', 'completed'].includes(r.status)
+  ) || (studentActiveRideId ? (simState?.requests || []).find(r => r.id === studentActiveRideId && ['pending_driver', 'waiting', 'assigned', 'onboard', 'rejected', 'completed'].includes(r.status)) : null);
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100">

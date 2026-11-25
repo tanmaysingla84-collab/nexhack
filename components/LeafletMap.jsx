@@ -258,7 +258,7 @@ export default function LeafletMap({
     // In student view: hide ALL station icons until a ride is active/accepted, then show ONLY that ride's stations
     const bookedPickupId = activeRide?.pickup;
     const bookedDropoffId = activeRide?.dropoff;
-    const isRideActive = Boolean(activeRide && ['pending_driver', 'waiting', 'assigned', 'onboard'].includes(activeRide.status));
+    const isRideActive = Boolean(activeRide && ['pending_driver', 'waiting', 'assigned', 'onboard', 'completed'].includes(activeRide.status));
 
     const visibleNodeIds = new Set(
       isStudent

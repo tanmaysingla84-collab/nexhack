@@ -147,9 +147,10 @@ export function createSimulation({
     maxDetourMin = 6,
     maxDetourFactor = config.maxDetourFactor || 1.5,
     riderName,
-    studentId
+    studentId,
+    id = null
   }) {
-    const requestId = `R${requestSeq++}`;
+    const requestId = id || `R${requestSeq++}`;
     const directPath = graph.getShortestPath(pickup, dropoff);
     const directMinutes = directPath.minutes;
 
@@ -476,6 +477,15 @@ export function createSimulation({
         vehicle.status = 'idle';
         vehicle.progressFraction = 0;
         vehicle.targetNode = null;
+        vehicle.dwellRemaining = 0;
+        vehicle.dwellDone = false;
+        continue;
+      }
+
+      // Check if vehicle is currently dwelling at a stop (boarding or dropping off passengers)
+      if (vehicle.dwellRemaining && vehicle.dwellRemaining > 0) {
+        vehicle.dwellRemaining--;
+        vehicle.status = 'dwelling';
         continue;
       }
 
@@ -483,6 +493,13 @@ export function createSimulation({
       const nextStop = vehicle.stops[0];
 
       if (vehicle.currentNode === nextStop.node && vehicle.progressFraction === 0 && !vehicle.targetNode) {
+        if (config.realisticPacing && !vehicle.dwellDone) {
+          vehicle.dwellRemaining = 4; // 4 ticks of boarding/dwelling (~4 seconds)
+          vehicle.dwellDone = true;
+          vehicle.status = 'dwelling';
+          continue;
+        }
+        vehicle.dwellDone = false;
         handleStopArrival(vehicle, nextStop);
         continue;
       }
@@ -496,7 +513,9 @@ export function createSimulation({
       }
 
       const sp = graph.getShortestPath(vehicle.currentNode, vehicle.targetNode);
-      const legDuration = sp.minutes > 0 ? sp.minutes : 1;
+      const legDuration = config.realisticPacing
+        ? Math.max((sp.minutes || 0.5) * 2.0, 1.4) // Paced: ~8-10 ticks per segment for realistic visualization
+        : (sp.minutes > 0 ? sp.minutes : 1);
       const progressDelta = dt / legDuration;
 
       vehicle.progressFraction += progressDelta;
@@ -523,7 +542,14 @@ export function createSimulation({
         }
 
         if (vehicle.currentNode === nextStop.node) {
-          handleStopArrival(vehicle, nextStop);
+          if (config.realisticPacing && !vehicle.dwellDone) {
+            vehicle.dwellRemaining = 4; // 4 ticks dwell for boarding/dropoff
+            vehicle.dwellDone = true;
+            vehicle.status = 'dwelling';
+          } else {
+            vehicle.dwellDone = false;
+            handleStopArrival(vehicle, nextStop);
+          }
         }
       }
     }

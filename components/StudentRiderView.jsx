@@ -75,14 +75,14 @@ export default function StudentRiderView({
     soloPoints = '10 pts';
   }
 
-  // Find user's active ride (including pending driver approval)
+  // Find user's active ride (including pending driver approval & recently completed)
   const currentRideId = externalActiveRideId || activeRideId;
   const activeRide = requests.find(r =>
     (r.id === currentRideId ||
      (currentUser?.name && r.riderName?.toLowerCase().includes(currentUser.name.toLowerCase())) ||
      (currentUser?.id && r.studentId === currentUser.id)) &&
-    ['pending_driver', 'waiting', 'assigned', 'onboard'].includes(r.status)
-  ) || (currentRideId ? requests.find(r => r.id === currentRideId && ['pending_driver', 'waiting', 'assigned', 'onboard', 'rejected'].includes(r.status)) : null);
+    ['pending_driver', 'waiting', 'assigned', 'onboard', 'completed'].includes(r.status)
+  ) || (currentRideId ? requests.find(r => r.id === currentRideId && ['pending_driver', 'waiting', 'assigned', 'onboard', 'rejected', 'completed'].includes(r.status)) : null);
 
   const nodeMap = new Map(nodes.map(n => [n.id, n.name]));
 
@@ -289,6 +289,51 @@ export default function StudentRiderView({
               <span>Cancel Ride Booking</span>
             </button>
           )}
+        </div>
+      )}
+
+      {/* 3B. COMPLETED RIDE CELEBRATION CARD */}
+      {activeRide && activeRide.status === 'completed' && (
+        <div className="p-4 bg-gradient-to-b from-emerald-950/80 via-slate-900 to-emerald-950/40 border-2 border-emerald-500/80 rounded-2xl shadow-xl backdrop-blur-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="flex items-center justify-between pb-3 border-b border-emerald-500/30 mb-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              <span className="font-extrabold text-xs tracking-wider text-emerald-300 uppercase">
+                🎉 TRIP COMPLETED • SAFELY ARRIVED
+              </span>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/25 text-emerald-300 border border-emerald-500/40">
+              SUCCESS
+            </span>
+          </div>
+
+          <div className="space-y-2 mb-4 text-xs">
+            <p className="text-slate-100 text-sm font-extrabold">
+              You have arrived at <span className="text-orange-400">{nodeMap.get(activeRide.dropoff) || activeRide.dropoff}</span>!
+            </p>
+            <div className="flex items-center justify-between text-slate-300 text-[11px] pt-1">
+              <span className="text-slate-400">Service Vehicle:</span>
+              <span className="text-sky-300 font-bold">{activeRide.vehicleId ? `Bus ${activeRide.vehicleId}` : 'Campus Shuttle'}</span>
+            </div>
+            <div className="flex items-center justify-between text-slate-300 text-[11px]">
+              <span className="text-slate-400">Completed At:</span>
+              <span className="text-slate-300 font-mono">t = {activeRide.completedAt || 'now'} min</span>
+            </div>
+          </div>
+
+          <button
+            className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 transition-all shadow-md flex items-center justify-center gap-1.5"
+            onClick={() => {
+              if (soundEnabled) playSound('click');
+              setActiveRideId(null);
+              if (onRidePlaced) onRidePlaced(null);
+            }}
+          >
+            <span>Book Another Campus Ride</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
