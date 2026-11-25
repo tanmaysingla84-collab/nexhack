@@ -254,12 +254,29 @@ export default function LeafletMap({
       );
     }
 
-    // 2. Campus Blueprint Nodes (Names hidden by default; ONLY shown for the booked ride's stations)
+    // 2. Campus Blueprint Nodes
+    // In student view: hide ALL station icons until a ride is active/accepted, then show ONLY that ride's stations
     const bookedPickupId = activeRide?.pickup;
     const bookedDropoffId = activeRide?.dropoff;
     const isRideActive = Boolean(activeRide && ['pending_driver', 'waiting', 'assigned', 'onboard'].includes(activeRide.status));
 
-    for (const node of nodes) {
+    const visibleNodeIds = new Set(
+      isStudent
+        ? (isRideActive && (bookedPickupId || bookedDropoffId) ? [bookedPickupId, bookedDropoffId].filter(Boolean) : [])
+        : nodes.map(n => n.id)
+    );
+
+    // Remove hidden/unselected nodes from the map
+    nodeMarkersRef.current.forEach((marker, id) => {
+      if (!visibleNodeIds.has(id)) {
+        marker.remove();
+        nodeMarkersRef.current.delete(id);
+      }
+    });
+
+    const activeNodesToRender = nodes.filter(n => visibleNodeIds.has(n.id));
+
+    for (const node of activeNodesToRender) {
       const isBookedPickup = isRideActive && bookedPickupId === node.id;
       const isBookedDropoff = isRideActive && bookedDropoffId === node.id;
       const isBookedStation = isBookedPickup || isBookedDropoff;
@@ -271,14 +288,14 @@ export default function LeafletMap({
       let iconAnchor = [14, 14];
 
       if (isBookedStation) {
-        // ONLY show station name for the booked ride
+        // ONLY show station name & badge for the booked ride
         const badgeTag = isBookedPickup ? 'PICKUP' : 'DROPOFF';
         const badgeColor = isBookedPickup ? '#10b981' : '#f97316';
         const badgeGlow = isBookedPickup ? 'rgba(16,185,129,0.9)' : 'rgba(249,115,22,0.9)';
 
         html = `
           <div style="display:flex; flex-direction:column; align-items:center; pointer-events:auto;">
-            <div class="node-pin ${node.type}" style="width:32px; height:32px; border:2.5px solid ${badgeColor}; box-shadow:0 0 16px ${badgeGlow}; transform:scale(1.15);">
+            <div class="node-pin ${node.type}" style="width:34px; height:34px; border:2.5px solid ${badgeColor}; box-shadow:0 0 18px ${badgeGlow}; transform:scale(1.2);">
               ${iconChar}
             </div>
             <div style="
@@ -305,7 +322,7 @@ export default function LeafletMap({
         iconSize = [240, 56];
         iconAnchor = [120, 16];
       } else {
-        // Normal station: CLEAN PIN ONLY - NO floating name label to prevent map clutter
+        // Normal station (Admin/Captain view only): CLEAN PIN ONLY
         html = `
           <div class="node-pin ${node.type}" title="${node.name}">
             ${iconChar}
@@ -350,15 +367,24 @@ export default function LeafletMap({
     }
 
     // 3. Vehicles
-    const currentVehicleIds = new Set(vehicles.map(v => v.id));
+    // In student view: only show assigned vehicle when ride is active/accepted; in admin/captain view: show all active fleet
+    const isRideAccepted = Boolean(activeRide && ['waiting', 'assigned', 'onboard'].includes(activeRide.status));
+    const visibleVehicleIds = new Set(
+      isStudent
+        ? (isRideAccepted && activeRide.vehicleId ? [activeRide.vehicleId] : [])
+        : vehicles.map(v => v.id)
+    );
+
     vehicleMarkersRef.current.forEach((marker, id) => {
-      if (!currentVehicleIds.has(id)) {
+      if (!visibleVehicleIds.has(id)) {
         marker.remove();
         vehicleMarkersRef.current.delete(id);
       }
     });
 
-    for (const vehicle of vehicles) {
+    const activeVehiclesToRender = vehicles.filter(v => visibleVehicleIds.has(v.id));
+
+    for (const vehicle of activeVehiclesToRender) {
       const isBroken = vehicle.status === 'broken';
       const isTracked = liveTrackVehicleId === vehicle.id;
       const isSelected = selectedVehicleId === vehicle.id;
@@ -444,22 +470,29 @@ export default function LeafletMap({
             hasAutoFittedPlacedRideRef.current = activeRide.id;
           }
 
-          // High-visibility glowing orange polyline ONLY for this placed ride
-          const glowPoly = L.polyline(ridePathCoords, {
+          // Triple-layer high-visibility glowing highlighted route ONLY for this placed ride
+          const auraPoly = L.polyline(ridePathCoords, {
             color: '#f97316',
-            weight: 9,
-            opacity: 0.4
+            weight: 14,
+            opacity: 0.32
           }).addTo(map);
 
           const corePoly = L.polyline(ridePathCoords, {
             color: '#f97316',
-            weight: 4.5,
-            opacity: 1.0,
-            dashArray: '8, 8'
+            weight: 5.5,
+            opacity: 1.0
           }).addTo(map);
 
-          routePolylinesRef.current.set(`placed-ride-glow`, glowPoly);
+          const pulsePoly = L.polyline(ridePathCoords, {
+            color: '#ffffff',
+            weight: 2,
+            opacity: 0.95,
+            dashArray: '6, 12'
+          }).addTo(map);
+
+          routePolylinesRef.current.set(`placed-ride-aura`, auraPoly);
           routePolylinesRef.current.set(`placed-ride-core`, corePoly);
+          routePolylinesRef.current.set(`placed-ride-pulse`, pulsePoly);
         }
       } else {
         hasAutoFittedPlacedRideRef.current = null;
